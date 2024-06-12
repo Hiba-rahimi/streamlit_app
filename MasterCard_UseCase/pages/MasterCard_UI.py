@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import base64
 import plotly.graph_objects as go
 from MasterCard_UseCase.parser_TT140_MasterCard import *
@@ -123,7 +122,7 @@ try:
         col2.metric("**Total number of transactions in the files:**", value=total_nbre_transactions )
         col3.metric("___Difference___", value=abs(nbr_total_MC - total_nbre_transactions),help="The net difference in transactions between the two sides is")
         
-        if st.button('Reconciliate', type="primary", use_container_width=True):
+        if st.button(' Start Reconiliation', type="primary", use_container_width=True):
             if nbr_total_MC == total_nbre_transactions:
                 st.header('Reconciliation Result')
                 df_reconciliated = handle_exact_match_csv(merged_df)
