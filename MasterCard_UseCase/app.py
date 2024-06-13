@@ -13,7 +13,7 @@ def run():
 
     st.set_page_config(page_title="Bank Recon",
                         page_icon="assets/logo.png", 
-                        layout="centered")
+                        layout="wide")
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
     st.sidebar.header(":house: Home")
     st.sidebar.success("Select one of the options below to perfrom reconciliation.")
@@ -162,7 +162,7 @@ def run():
       </svg>
     </span>
   </a>
-  <a href="./Visa_UseCase" class="data-card">
+  <a href="./Visa_UI" class="data-card">
     <h3>Visa Network Reconciliaiton Option</h3>
     <span class="link-text">
       Let's Get Started 
