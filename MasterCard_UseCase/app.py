@@ -153,7 +153,7 @@ def run():
 }
     </style>
 <section class="page-contain">
-  <a href="http://localhost:8501/MasterCard_UI" class="data-card">
+  <a href="./MasterCard_UI" class="data-card">
     <h3>MasterCard Network Reconciliaiton Option</h3>
     <span class="link-text">
       Let's Get Started
@@ -162,7 +162,7 @@ def run():
       </svg>
     </span>
   </a>
-  <a href="http://localhost:8501/Visa_UseCase" class="data-card">
+  <a href="./Visa_UseCase" class="data-card">
     <h3>Visa Network Reconciliaiton Option</h3>
     <span class="link-text">
       Let's Get Started 
