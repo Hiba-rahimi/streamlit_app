@@ -4,16 +4,15 @@ from MasterCard_UseCase.parser_TT140_MasterCard import *
 from MasterCard_UseCase.processing_bank_sources import *
 from datetime import date
 
-
 import plotly.graph_objects as go
 st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
-st.header("📤 :violet[Veuillez charger les fichiers requis pour la réconciliation avec le rapport Mastercard]", divider='rainbow')
+st.header("📤 :violet[Chargez les fichiers requis pour la réconciliation avec le rapport Mastercard]", divider='rainbow')
 
 uploaded_mastercard_file = st.file_uploader(":arrow_down: **Chargez le fichier Mastercard**", type=["001"])
 uploaded_cybersource_file = st.file_uploader(":arrow_down: **Chargez le fichier Cybersource**", type=["csv"])
 uploaded_pos_file = st.file_uploader(":arrow_down: **Chargez le fichier POS**", type=["csv"])
 uploaded_sai_manuelle_file = st.file_uploader(":arrow_down: **Chargez le fichier de saisie manuelle**", type=["csv"])
-filtering_date = st.date_input("Veuillez entrer la date de filtrage pour les transactions rejetées")
+filtering_date = st.date_input("Veuillez  la date de filtrage pour les transactions rejetées")
 uploaded_recycled_file = st.file_uploader(":arrow_down: **Chargez le fichier des transactions recyclées**", type=["xlsx"])
 
 st.divider()
@@ -80,6 +79,7 @@ except Exception as e:
 def highlight_non_reconciliated_row(row):
     return ['background-color: #F99485' if row['Rapprochement'] == 'not ok' else '' for _ in row]
 
+
 # Diagramme circulaire pour les transactions Mastercard
 if total_transactions['Cybersource'] > 0 or total_transactions['POS'] > 0 or total_transactions['Saisie Manuelle'] > 0:
     st.header("	:bar_chart: Répartition des transactions par source", divider='grey')
@@ -110,11 +110,11 @@ try:
             df_recycled,merged_df, total_nbre_transactions = merging_with_recycled(recycled_file_path, filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df , filtering_date )
             st.write("Transactions recyclées")
             st.dataframe(df_recycled)
-            st.write("### Nombre de transactions des sources avec rejet recyclé", total_nbre_transactions)
+            st.write("### Nombre de transactions des sources avec rejets recyclés :", total_nbre_transactions)
             st.dataframe(merged_df)
         else:
             merged_df, total_nbre_transactions = merging_sources_without_recycled(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df)
-            st.write("### Nombre de transactions des sources sans rejet recyclé", total_nbre_transactions)
+            st.write("### Nombre de transactions des sources sans rejets recyclés :", total_nbre_transactions)
             st.warning('Fichier recyclé non téléchargé. La réconciliation sera effectuée sans les transactions recyclées.')
         col2.metric("**Nombre total de transactions dans les fichiers :**", value=total_nbre_transactions )
         col3.metric("___Différence___", value=abs(nbr_total_MC - total_nbre_transactions),help="La différence nette de transactions entre les deux côtés est")
@@ -137,6 +137,6 @@ try:
                 st.header('Transactions rejetées')
                 st.dataframe(df_rejections)
     else:
-        st.warning("Veuillez Chargez tous les fichiers requis pour continuer.")
+        st.warning("Veuillez Charger tous les fichiers requis pour continuer.")
 except Exception as e:
     st.error(f"Erreur lors du traitement du fichier Mastercard")

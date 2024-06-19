@@ -137,26 +137,10 @@ def validate_file_name_and_date(file_name, source, date_to_validate=None):
     # Extract the date from the file name
     date_match = re.search(r"\d{2}-\d{2}-\d{2}", file_name)
     if date_match:
-        extracted_date_str = date_match.group(0)
-        try:
-            extracted_date = datetime.strptime(extracted_date_str, '%y-%m-%d')
-        except ValueError:
-            raise ValueError(f"Extracted date ({extracted_date_str}) does not match the expected format 'yy-mm-dd'.")
-
+        extracted_date = date_match.group(0)
         if date_to_validate:
-            try:
-                date_to_validate_dt = datetime.strptime(date_to_validate, '%d/%m/%Y')
-            except ValueError:
-                raise ValueError(f"Provided date ({date_to_validate}) does not match the expected format 'dd/mm/yyyy'.")
-            
-            # Subtract one day from the extracted date
-            previous_day = extracted_date - timedelta(days=1)
-            
-            # Format both dates to 'dd/mm/yyyy' for comparison
-            extracted_date_minus_one_str = previous_day.strftime('%d/%m/%Y')
-            
-            if extracted_date_minus_one_str != date_to_validate:
-                raise ValueError(f"Date extracted from the file name minus one day ({extracted_date_minus_one_str}) does not match the provided date ({date_to_validate}).")
+            if extracted_date != date_to_validate:
+                raise ValueError(f"Date extracted from the file name ({extracted_date}) does not match the provided date ({date_to_validate}).")
     else:
         raise ValueError("Date not found in the file name.")
 

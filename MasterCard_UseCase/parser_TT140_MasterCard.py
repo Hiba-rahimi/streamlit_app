@@ -4,10 +4,23 @@ import re
 from datetime import datetime , timedelta
 
 
-currencies_settings = './MasterCard_UseCase/currency_codes.json'
-countries_settings = './MasterCard_UseCase/countries_acronyms.json'
+currencies_settings = 'MasterCard_UseCase/currency_codes.json'
+countries_settings = 'MasterCard_UseCase/countries_acronyms.json'
+
 
 def extract_date_from_mastercard_file(file_contents):
+    """
+    Extract the date from the MasterCard file contents.
+    
+    Parameters:
+        file_contents (str): Contents of the uploaded file.
+        
+    Returns:
+        str: Extracted date in the format 'YY-MM-DD'.
+        
+    Raises:
+        ValueError: If the date cannot be extracted from the file contents.
+    """
     for line in file_contents.splitlines():
         if line.startswith("1IP727010-AA"):
             # Adjust the pattern to match the date format in the target line
@@ -28,8 +41,6 @@ def extract_date_from_mastercard_file(file_contents):
             else:
                 raise ValueError(f"Could not extract date from the line: {line}")
     raise ValueError("Could not find the target line in the file to extract the date.")
-
-        
 
 def extract_rejections(mastercard_file, currencies_settings, countries_settings):
     if mastercard_file is None or len(mastercard_file) == 0:
