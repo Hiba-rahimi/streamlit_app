@@ -238,7 +238,7 @@ def merging_with_recycled(recycled_rejected_file,filtered_cybersource_df, filter
     df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace("COTE D'IVOIRE", "COTE D IVOIRE")
 
     # Remove any commas and spaces from the 'Montant' column and convert it to numeric
-    df_recycled['Montant'] = df_recycled['Montant'].str.replace(',', '').str.replace(' ', '').astype(float)
+    #df_recycled['Montant'] = df_recycled['Montant'].str.replace(',', '').str.replace(' ', '').astype(float)
 
     # Normalize 'FILIALE' values
     df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace('SG-', 'SG - ')

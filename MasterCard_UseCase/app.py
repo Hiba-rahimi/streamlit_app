@@ -18,7 +18,6 @@ def run():
     st.sidebar.header(":house: Home")
     st.sidebar.success("Choisissez une des options suivantes pour procéder au rapprochement.")
     st.sidebar.page_link("pages/MasterCard_UI.py", label=" **MasterCard Network Reconciliaiton Option**" , icon="🔀")
-    #st.sidebar.page_link("pages/Testcompare.py", label=" **Test Option**" , icon="🔀")
     # st.sidebar.page_link("pages/Visa_UseCase.py", label=" **Visa Network Reconciliaiton Option**" , icon="🔀")
     st.write("# Bienvenue ! 👋")
     file_ = open("assets/animated-logo.gif", "rb")
