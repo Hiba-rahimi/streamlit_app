@@ -163,7 +163,7 @@ def run():
     </span>
   </a>
   <a href="./Visa_UI" class="data-card">
-    <h3>Visa Network Reconciliaiton Option</h3>
+    <h3>Visa Network Reconciliaiton Option             </h3>
     <span class="link-text">
       Let's Get Started 
       <svg width="25" height="16" viewBox="0 0 25 16" fill="none" xmlns="http://www.w3.org/2000/svg">

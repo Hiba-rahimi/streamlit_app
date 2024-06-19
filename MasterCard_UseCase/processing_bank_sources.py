@@ -1,5 +1,4 @@
 # librairies
-from datetime import date
 import pandas as pd
 from parser_TT140_MasterCard import *
 import os
@@ -138,15 +137,62 @@ def validate_file_name_and_date(file_name, source, date_to_validate=None):
     # Extract the date from the file name
     date_match = re.search(r"\d{2}-\d{2}-\d{2}", file_name)
     if date_match:
-        extracted_date = date_match.group(0)
+        extracted_date_str = date_match.group(0)
+        try:
+            extracted_date = datetime.strptime(extracted_date_str, '%y-%m-%d')
+        except ValueError:
+            raise ValueError(f"Extracted date ({extracted_date_str}) does not match the expected format 'yy-mm-dd'.")
+
         if date_to_validate:
-            if extracted_date != date_to_validate:
-                raise ValueError(f"Date extracted from the file name ({extracted_date}) does not match the provided date ({date_to_validate}).")
+            try:
+                date_to_validate_dt = datetime.strptime(date_to_validate, '%d/%m/%Y')
+            except ValueError:
+                raise ValueError(f"Provided date ({date_to_validate}) does not match the expected format 'dd/mm/yyyy'.")
+            
+            # Subtract one day from the extracted date
+            previous_day = extracted_date - timedelta(days=1)
+            
+            # Format both dates to 'dd/mm/yyyy' for comparison
+            extracted_date_minus_one_str = previous_day.strftime('%d/%m/%Y')
+            
+            if extracted_date_minus_one_str != date_to_validate:
+                raise ValueError(f"Date extracted from the file name minus one day ({extracted_date_minus_one_str}) does not match the provided date ({date_to_validate}).")
     else:
         raise ValueError("Date not found in the file name.")
 
     return True
 
+# Converting the excel rejects file to a df
+def excel_to_csv_to_df(excel_file_path, sheet_name=0):
+    """
+    Converts an Excel file to a CSV file and then reads it into a Pandas DataFrame.
+
+    Parameters:
+        excel_file_path (str): Path to the Excel file.
+        sheet_name (str or int): Name or index of the sheet to convert (default is the first sheet).
+
+    Returns:
+        pd.DataFrame: DataFrame containing the data from the CSV file.
+    """
+    try:
+        # Read the Excel file
+        df = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=0)
+        
+        # Define the CSV file path
+        csv_file_path = excel_file_path.replace('.xlsx', '.csv')
+        
+        # Save the DataFrame to a CSV file without an index
+        df.to_csv(csv_file_path, index=False)
+        
+        # Read the CSV file into a DataFrame
+        df_csv = read_csv_with_delimiters(csv_file_path)
+        return df_csv
+    
+    except PermissionError as p_error:
+        print(f"Permission error: {p_error}. Please check your file permissions.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    return None
 
 
 # Merge the dataframes on relevant common columns
@@ -193,34 +239,31 @@ def merging_sources_without_recycled(filtered_cybersource_df, filtered_saisie_ma
     return merged_df , total_nbre_transactions
 
 
-def merging_with_recycled(recycled_rejected_file,filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df):
+def merging_with_recycled(recycled_rejected_file,filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df, filtering_date):
     df_merged, _ = merging_sources_without_recycled(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df)
-
-    df_recycled_files = read_csv_with_delimiters(recycled_rejected_file, 0)
-    df_recycled_files.columns = df_recycled_files.columns.str.strip()
-    df_recycled_files = df_recycled_files.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-    df_recycled_files.rename(columns={'BANQUE': 'FILIALE'}, inplace=True)
+    df_recycled = excel_to_csv_to_df(recycled_rejected_file)    
+    df_recycled.columns = df_recycled.columns.str.strip()
+    df_recycled = df_recycled.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+    df_recycled.rename(columns={'BANQUE': 'FILIALE'}, inplace=True)
     # Filter rows where 'Date_Retraitement' is not equal to the specified date
-    df_recycled_files = df_recycled_files[df_recycled_files['Date Retraitement'] != Date_Retraitement]
-    df_recycled_files.drop_duplicates(subset=['FILIALE', 'RESEAU', 'ARN', 'Autorisation', 'Date Transaction', 'Montant', 'Devise'], inplace=True)
+    
+    df_recycled = df_recycled[df_recycled['Date Retraitement'] == filtering_date]
+    
+    df_recycled.drop_duplicates(subset=['FILIALE', 'RESEAU', 'ARN', 'Autorisation', 'Date Transaction', 'Montant', 'Devise'], inplace=True)
     # Normalize 'FILIALE' values
-    df_recycled_files['FILIALE'] = df_recycled_files['FILIALE'].str.replace("COTE D'IVOIRE", "COTE D IVOIRE")
+    df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace("COTE D'IVOIRE", "COTE D IVOIRE")
 
     # Remove any commas and spaces from the 'Montant' column and convert it to numeric
-    df_recycled_files['Montant'] = df_recycled_files['Montant'].str.replace(',', '').str.replace(' ', '').astype(float)
+    df_recycled['Montant'] = df_recycled['Montant'].str.replace(',', '').str.replace(' ', '').astype(float)
 
     # Normalize 'FILIALE' values
-    df_recycled_files['FILIALE'] = df_recycled_files['FILIALE'].str.replace('SG-', 'SG - ')
+    df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace('SG-', 'SG - ')
 
     # Group by FILIALE and RESEAU and calculate the count and sum of Montant
-    summary = df_recycled_files.groupby(['FILIALE', 'RESEAU']).agg(
+    summary = df_recycled.groupby(['FILIALE', 'RESEAU']).agg(
         NBRE_TRANSACTION=('Montant', 'count'),
         MONTANT_TOTAL=('Montant', 'sum')
     ).reset_index()
-
-    # Print the summary DataFrame
-    #print("Résumé des Rejets :")
-    #print(summary)
 
     # Merge the summary DataFrame into the corresponding 'FILIALE' values of the 'df_merged' DataFrame
     merged_df = df_merged.merge(summary, on=['FILIALE', 'RESEAU'], how='left', suffixes=('_merged', '_summary'))
@@ -247,7 +290,7 @@ def merging_with_recycled(recycled_rejected_file,filtered_cybersource_df, filter
     #print(total_nbre_transactions)
 
 
-    return merged_df, total_nbre_transactions
+    return df_recycled, merged_df, total_nbre_transactions
 
 
 def populating_table_reconcialited(merged_df):
