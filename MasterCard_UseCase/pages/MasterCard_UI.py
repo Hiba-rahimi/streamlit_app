@@ -136,12 +136,12 @@ try:
                 st.dataframe(df_summary)
                 st.header('Transactions rejetées')
                 st.dataframe(df_rejections)
-                st.write("Nombre de transactions rejetée du fichier Mastercard : ", df_summary.iloc[0, 1])
-                st.write("rejets extraits du fichier MasterCard : ",total_nbre_transactions - nbr_total_MC  )
-                if total_nbre_transactions - nbr_total_MC == df_summary.iloc[0, 1]:
-                    st.success("Les rejets extraits du fichier MasterCard ont bien été justifiés")
-                else:
-                    st.warning("Les rejets extraits du fichier MasterCard n'ont pas pu être justifiés.")
+               # st.write("Nombre de transactions rejetée du fichier Mastercard : ", df_summary.iloc[0, 1])
+               # st.write("rejets extraits du fichier MasterCard : ",total_nbre_transactions - nbr_total_MC  )
+               # if total_nbre_transactions - nbr_total_MC == df_summary.iloc[0, 1]:
+               #     st.success("Les rejets extraits du fichier MasterCard ont bien été justifiés")
+               # else:
+               #     st.warning("Les rejets extraits du fichier MasterCard n'ont pas pu être justifiés.")
     else:
         st.warning("Veuillez Chargez tous les fichiers requis pour continuer.")
 except Exception as e:
