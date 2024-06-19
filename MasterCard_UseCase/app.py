@@ -13,12 +13,12 @@ def run():
 
     st.set_page_config(page_title="Bank Recon",
                         page_icon="assets/logo.png", 
-                        layout="wide")
+                        layout="centered")
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
     st.sidebar.header(":house: Home")
     st.sidebar.success("Select one of the options below to perfrom reconciliation.")
     st.sidebar.page_link("pages/MasterCard_UI.py", label=" **MasterCard Network Reconciliaiton Option**" , icon="🔀")
-  
+    #st.sidebar.page_link("pages/Testcompare.py", label=" **Test Option**" , icon="🔀")
     # st.sidebar.page_link("pages/Visa_UseCase.py", label=" **Visa Network Reconciliaiton Option**" , icon="🔀")
     st.write("# Welcome to Our Bank Reconciliation App! 👋")
     file_ = open("assets/animated-logo.gif", "rb")
@@ -153,7 +153,7 @@ def run():
 }
     </style>
 <section class="page-contain">
-  <a href="./MasterCard_UI" class="data-card">
+  <a href="http://localhost:8501/MasterCard_UI" class="data-card">
     <h3>MasterCard Network Reconciliaiton Option</h3>
     <span class="link-text">
       Let's Get Started
@@ -162,8 +162,8 @@ def run():
       </svg>
     </span>
   </a>
-  <a href="./Visa_UI" class="data-card">
-    <h3>Visa Network Reconciliaiton Option             </h3>
+  <a href="http://localhost:8501/Visa_UseCase" class="data-card">
+    <h3>Visa Network Reconciliaiton Option</h3>
     <span class="link-text">
       Let's Get Started 
       <svg width="25" height="16" viewBox="0 0 25 16" fill="none" xmlns="http://www.w3.org/2000/svg">

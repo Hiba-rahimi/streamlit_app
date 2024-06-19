@@ -206,3 +206,4 @@ splink==3.9.14
   - sqlglot [required: >=13.0.0, installed: 23.7.0]
 XlsxWriter==3.2.0
 streamlit==1.35.0
+openpyxl==3.1.4
