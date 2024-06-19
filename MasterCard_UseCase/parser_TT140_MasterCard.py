@@ -1,36 +1,35 @@
 import pandas as pd
 import json
 import re
-from datetime import datetime
+from datetime import datetime , timedelta
 
 
-currencies_settings = 'MasterCard_UseCase/currency_codes.json'
-countries_settings = 'MasterCard_UseCase/countries_acronyms.json'
-
+currencies_settings = './MasterCard_UseCase/currency_codes.json'
+countries_settings = './MasterCard_UseCase/countries_acronyms.json'
 
 def extract_date_from_mastercard_file(file_contents):
-    """
-    Extract the date from the MasterCard file contents.
-    
-    Parameters:
-        file_contents (str): Contents of the uploaded file.
-        
-    Returns:
-        str: Extracted date in the format 'YY-MM-DD'.
-        
-    Raises:
-        ValueError: If the date cannot be extracted from the file contents.
-    """
     for line in file_contents.splitlines():
-        if line.startswith(" BUSINESS SERVICE LEVEL: INTERREGIONAL"):
-            date_pattern = r"\d{4}-\d{2}-\d{2}"
+        if line.startswith("1IP727010-AA"):
+            # Adjust the pattern to match the date format in the target line
+            date_pattern = r"RUN DATE: (\d{2}/\d{2}/\d{2})"
             date_match = re.search(date_pattern, line)
             if date_match:
-                extracted_date = datetime.strptime(date_match.group(0), "%Y-%m-%d").strftime("%y-%m-%d")
-                return extracted_date
+                # Extract and parse the date
+                run_date = datetime.strptime(date_match.group(1), "%m/%d/%y").strftime("%y-%m-%d")
+                # Convert the string to a datetime object
+                date_object = datetime.strptime(run_date, "%y-%m-%d")
+
+                # Add one day to the date
+                day_after = date_object + timedelta(days=1)
+
+                # Convert the datetime object back to a string in 'YY-MM-DD' format
+                day_after = day_after.strftime("%y-%m-%d")
+                return run_date , day_after
             else:
                 raise ValueError(f"Could not extract date from the line: {line}")
     raise ValueError("Could not find the target line in the file to extract the date.")
+
+        
 
 def extract_rejections(mastercard_file, currencies_settings, countries_settings):
     if mastercard_file is None or len(mastercard_file) == 0:
