@@ -16,11 +16,11 @@ def run():
                         layout="centered")
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
     st.sidebar.header(":house: Home")
-    st.sidebar.success("Select one of the options below to perfrom reconciliation.")
+    st.sidebar.success("Choisissez une des options suivantes pour procéder au rapprochement.")
     st.sidebar.page_link("pages/MasterCard_UI.py", label=" **MasterCard Network Reconciliaiton Option**" , icon="🔀")
     #st.sidebar.page_link("pages/Testcompare.py", label=" **Test Option**" , icon="🔀")
     # st.sidebar.page_link("pages/Visa_UseCase.py", label=" **Visa Network Reconciliaiton Option**" , icon="🔀")
-    st.write("# Welcome to Our Bank Reconciliation App! 👋")
+    st.write("# Bienvenue ! 👋")
     file_ = open("assets/animated-logo.gif", "rb")
     contents = file_.read()
     data_url = base64.b64encode(contents).decode("utf-8")
@@ -153,8 +153,8 @@ def run():
 }
     </style>
 <section class="page-contain">
-  <a href="http://localhost:8501/MasterCard_UI" class="data-card">
-    <h3>MasterCard Network Reconciliaiton Option</h3>
+  <a href="./pages/MasterCard_UI.py" class="data-card">
+    <h3>Option de rapprochement réseau MasterCard</h3>
     <span class="link-text">
       Let's Get Started
     <svg width="25" height="16" viewBox="0 0 25 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -162,8 +162,8 @@ def run():
       </svg>
     </span>
   </a>
-  <a href="http://localhost:8501/Visa_UseCase" class="data-card">
-    <h3>Visa Network Reconciliaiton Option</h3>
+  <a href="#blank" class="data-card">
+    <h3>Option de rapprochement réseau Visa</h3>
     <span class="link-text">
       Let's Get Started 
       <svg width="25" height="16" viewBox="0 0 25 16" fill="none" xmlns="http://www.w3.org/2000/svg">
