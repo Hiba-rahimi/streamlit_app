@@ -8,7 +8,7 @@ from openpyxl.styles import PatternFill
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, numbers
 from openpyxl.worksheet.table import Table, TableStyleInfo
-import win32com.client as win32
+#import win32com.client as win32
 import streamlit as st
 import io
 from openpyxl import Workbook
@@ -549,22 +549,22 @@ def save_excel_locally(excel_path , file_name):
     
     return file_path  # Return the file path
 
-def send_excel_contents_to_outlook(excel_path , file_name):
-    try:
-        # Save Excel file locally
-        excel_file_path = save_excel_locally(excel_path , file_name)
+# def send_excel_contents_to_outlook(excel_path , file_name):
+#     try:
+#         # Save Excel file locally
+#         excel_file_path = save_excel_locally(excel_path , file_name)
         
-        # Connect to Outlook
-        outlook = win32.Dispatch("Outlook.Application")
+#         # Connect to Outlook
+#         outlook = win32.Dispatch("Outlook.Application")
 
-        # Create a new email
-        mail = outlook.CreateItem(0)
+#         # Create a new email
+#         mail = outlook.CreateItem(0)
         
-        # Attach Excel file
-        mail.Attachments.Add(excel_file_path)
+#         # Attach Excel file
+#         mail.Attachments.Add(excel_file_path)
         
-        # Display the Outlook application with the composed email
-        mail.Display(True)  # True opens the email in a new window
+#         # Display the Outlook application with the composed email
+#         mail.Display(True)  # True opens the email in a new window
 
     except Exception as e:
         st.error(f"Error occurred while sending the email: {e}")

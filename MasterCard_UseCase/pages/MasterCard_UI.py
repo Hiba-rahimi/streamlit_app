@@ -140,7 +140,7 @@ try:
                 with col1:
                     excel_path_email_1 , file_name_1= download_file(recon=True, df=df_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
                 with col2:                  
-                    st.button(":email: Insérer le tableau ci-dessous dans un E-mail",key= 1,   on_click=lambda: send_excel_contents_to_outlook(excel_path_email_1 , file_name_1) ,  type="primary")
+                    st.button(":email: Insérer le tableau ci-dessous dans un E-mail",key= 1,    type="primary")
                 with col3:
                     st.button(":floppy_disk:  Stocker le tableau ci-dessous",key= 4, type="primary")
                 st.header('Résumé des rejets')
@@ -150,7 +150,7 @@ try:
                 with col4:
                     excel_path_email_2 , file_name_2 = download_file(recon=False, df=df_summary, file_partial_name='rejected_summary_MC', button_label=":arrow_down: Téléchargez le résumé des rejets", run_date=run_date)
                 with col5:
-                    st.button(":email: Insérer le tableau ci-dessous dans un E-mail", key= 2, on_click=lambda: send_excel_contents_to_outlook(excel_path_email_2, file_name_2) ,  type="primary")
+                    st.button(":email: Insérer le tableau ci-dessous dans un E-mail", key= 2, type="primary")
                 with col6:
                     st.button(":floppy_disk:  Stocker le tableau ci-dessous", key= 13,type="primary")
                 st.header('Transactions rejetées')
@@ -159,7 +159,7 @@ try:
                 with col7:
                     excel_path_email_3 , file_name_3= download_file(recon=False, df=df_rejections, file_partial_name='rejected_transactions_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
                 with col8:
-                    st.button(":email: Insérer le tableau ci-dessous dans un E-mail", key= 3, on_click=lambda: send_excel_contents_to_outlook(excel_path_email_3 , file_name_3) ,  type="primary")
+                    st.button(":email: Insérer le tableau ci-dessous dans un E-mail", key= 3,  type="primary")
                 with col9:
                     st.button(":floppy_disk:  Stocker le tableau ci-dessous",key=12,  type="primary")
         st.warning("Veuillez charger tous les fichiers requis pour continuer.")
