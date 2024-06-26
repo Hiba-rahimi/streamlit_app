@@ -290,7 +290,7 @@ def handle_non_match_reconciliation(file_path,merged_df):
             df_reconciliated.loc[match_idx, 'Nbre Total de Rejets'] = nbr_rejets
             df_reconciliated.loc[match_idx, 'Montant de Rejets'] = montant_rejets
             df_reconciliated['Montant de Transactions (Couverture)'] = df_reconciliated['Montant Total de Transactions']
-            df_reconciliated['Nbre de Transactions (Couverture)'] = df_reconciliated['NbreTotaleDeTransactions']
+            df_reconciliated['Nbre de Transactions (Couverture)'] = df_reconciliated['Nbre Total De Transactions']
 
     # Fill NaN values in 'Nbre Total de Rejets' with 0 before converting to integer type
     df_reconciliated['Nbre Total de Rejets'] = df_reconciliated['Nbre Total de Rejets'].replace('', 0).fillna(0).astype(int)

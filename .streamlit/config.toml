@@ -1,9 +1,10 @@
 [theme]
 base="light"
-primaryColor="#b7d6f5"
-secondaryBackgroundColor="#b7d6f5"
+primaryColor="#FF731D"
+secondaryBackgroundColor="#B9D9EB"
 font="monospace"
 [runner]
 fastReruns = true
 [client]
 showSidebarNavigation = false
+

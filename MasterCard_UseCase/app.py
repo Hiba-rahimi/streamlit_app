@@ -152,7 +152,7 @@ def run():
 }
     </style>
 <section class="page-contain">
-  <a href="./pages/MasterCard_UI.py" class="data-card">
+  <a href="./MasterCard_UI" class="data-card">
     <h3>Option de rapprochement réseau MasterCard</h3>
     <span class="link-text">
       Let's Get Started
