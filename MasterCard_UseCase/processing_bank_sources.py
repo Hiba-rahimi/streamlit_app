@@ -566,5 +566,5 @@ def save_excel_locally(excel_path , file_name):
 #         # Display the Outlook application with the composed email
 #         mail.Display(True)  # True opens the email in a new window
 
-    except Exception as e:
-        st.error(f"Error occurred while sending the email: {e}")
+    # except Exception as e:
+    #     st.error(f"Error occurred while sending the email: {e}")

@@ -126,7 +126,7 @@ try:
                 with col1:
                     excel_email_path ,file_name = download_file(recon=True, df=df_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Chargez les résultats de réconciliation au format Excel", run_date=run_date)
                 with col2:                  
-                    st.button(":email: Insérer le tableau ci-dessous dans un E-mail" , key= 10,type="primary" ,  on_click=lambda: send_excel_contents_to_outlook(excel_email_path , file_name) )
+                    st.button(":email: Insérer le tableau ci-dessous dans un E-mail" , key= 10,type="primary" )
                 with col3:
                     st.button(":clipboard: Stocker le tableau ci-dessous",key= 11, type="primary")
             else:
