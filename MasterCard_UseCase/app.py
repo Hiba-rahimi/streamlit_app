@@ -1,7 +1,5 @@
 import streamlit as st
 import base64
-
-# recon_UI/app.py
 import sys
 import os
 
@@ -13,12 +11,13 @@ def run():
 
     st.set_page_config(page_title="Bank Recon",
                         page_icon="assets/logo.png", 
-                        layout="centered")
+                        layout="wide")
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
-    st.sidebar.header(":house: Home")
-    st.sidebar.success("Choisissez une des options suivantes pour procéder au rapprochement.")
+    st.divider()
+    st.sidebar.page_link("app.py", label="**Accueil**" , icon="🏠")
+    st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
     st.sidebar.page_link("pages/MasterCard_UI.py", label=" **MasterCard Network Reconciliaiton Option**" , icon="🔀")
-    # st.sidebar.page_link("pages/Visa_UseCase.py", label=" **Visa Network Reconciliaiton Option**" , icon="🔀")
+    #st.sidebar.page_link("pages/Visa_UseCase.py", label=" **Visa Network Reconciliaiton Option**" , icon="🔀")
     st.write("# Bienvenue ! 👋")
     file_ = open("assets/animated-logo.gif", "rb")
     contents = file_.read()
