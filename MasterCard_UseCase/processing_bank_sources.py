@@ -11,6 +11,7 @@ from openpyxl.worksheet.table import Table, TableStyleInfo
 #import win32com.client as win32
 import streamlit as st
 import io
+#from streamlit_modal import Modal
 from openpyxl import Workbook
 
 pd.set_option('future.no_silent_downcasting', True)
@@ -195,11 +196,12 @@ def standardize_date_format(date_column, desired_format='%Y-%m-%d'):
         pd.Series: The column with dates in the standardized format.
     """
     # Convert all dates to datetime objects
-    date_column = pd.to_datetime(date_column , dayfirst=False ,  yearfirst=True)
+    date_column = pd.to_datetime(date_column , dayfirst=False  , yearfirst=True)
     # Format all datetime objects to the desired format
     date_column = date_column.dt.strftime(desired_format )
     
     return date_column
+
 
 # Function to format columns
 def format_columns(df):
@@ -568,3 +570,23 @@ def save_excel_locally(excel_path , file_name):
 
     # except Exception as e:
     #     st.error(f"Error occurred while sending the email: {e}")
+    # def show_modal_confirmation(modal_key, title, message, confirm_action, data, insert_type):
+    #     modal = Modal(key=modal_key, title=title)
+    #
+    # if st.button(f':floppy_disk: Stocker résultats de {insert_type}', key=f'sauvegarder_resultats_{modal_key}',type="primary", use_container_width=True):
+    #     modal.open()
+    #
+    # if modal.is_open():
+    #     with modal.container():
+    #         st.write(message)
+    #         col1, col2 = st.columns(2)
+    #         with col1:
+    #             if st.button("Yes", key=f"{modal_key}_yes"):
+    #                 confirm_action(data)
+    #                 modal.close()
+    #
+    #         with col2:
+    #             if st.button("No", key=f"{modal_key}_no"):
+    #                 modal.close()
+    #
+    # return modal
