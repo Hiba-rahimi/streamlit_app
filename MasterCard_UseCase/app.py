@@ -6,14 +6,13 @@ import os
 # Add the parent directory to sys.path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
 def run():
 
     st.set_page_config(page_title="Bank Recon",
                         page_icon="assets/logo.png", 
                         layout="wide")
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
-    st.divider()
+    st.sidebar.divider()
     st.sidebar.page_link("app.py", label="**Accueil**" , icon="🏠")
     st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
     st.sidebar.page_link("pages/MasterCard_UI.py", label=" **MasterCard Network Reconciliaiton Option**" , icon="🔀")
