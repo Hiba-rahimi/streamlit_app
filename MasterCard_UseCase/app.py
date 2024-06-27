@@ -15,7 +15,7 @@ def run():
     st.sidebar.divider()
     st.sidebar.page_link("app.py", label="**Accueil**" , icon="🏠")
     st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
-    st.sidebar.page_link("pages/MasterCard_UI.py", label=" **MasterCard Network Reconciliaiton Option**" , icon="🔀")
+    st.sidebar.page_link("pages/MasterCard_UI.py", label=" **🔀 MasterCard Network Reconciliaiton Option**" )
     #st.sidebar.page_link("pages/Visa_UseCase.py", label=" **Visa Network Reconciliaiton Option**" , icon="🔀")
     st.write("# Bienvenue ! 👋")
     file_ = open("assets/animated-logo.gif", "rb")

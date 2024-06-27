@@ -7,13 +7,12 @@ def main():
     st.sidebar.divider()
     st.sidebar.page_link("app.py", label="**Accueil**" , icon="🏠")
     st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
-    st.sidebar.page_link("pages/MasterCard_UI.py", label="  **🔀 MasterCard Network Reconciliaiton Option**" )
-    st.header("Reconciliation History" , divider= 'rainbow')
+    st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 MasterCard Network Reconciliaiton Option**" )
+    st.header("Historique de Réconciliation" , divider= 'rainbow')
     st.write("  ")
     # Create date input and selectbox for multi-criteria search
-    search_date = st.date_input("**Select a processing date :**", value=datetime.today(), key="search_date")
+    search_date = st.date_input("**Sélectionnez une date de processing : :**", value=datetime.today(), key="search_date")
     formatted_date = search_date.strftime('%d-%b-%y').upper()
-
 
     # Search and display the results when both criteria are provided and the search button is clicked
     if st.button(":mag_right: **Search**", key="search_button" , type="primary" , use_container_width=True):
@@ -21,12 +20,13 @@ def main():
         if not df_search_results.empty:
             # Normalize the 'Rapprochement' column to upper case for case-insensitive matching
             if not df_search_results.empty:
-                st.write("Search Results")
+                st.write("Résultats de Recherche")
+                df_search_results.drop(columns=['_id'], inplace=True)
                 st.dataframe(df_search_results)
             else:
-                st.warning("No records found for the selected date and état de rapprochement.")
+                st.warning("Aucun enregistrement trouvé pour la date sélectionnée.")
         else:
-            st.warning("No records found for the selected date.")
+            st.warning("Aucun enregistrement trouvé pour la date sélectionnée.")
 
 if __name__ == "__main__":
     main()
