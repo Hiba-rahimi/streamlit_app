@@ -1,10 +1,9 @@
 import streamlit as st
-#import pandas as pd
 import plotly.graph_objects as go
 from MasterCard_UseCase.parser_TT140_MasterCard import *
 from MasterCard_UseCase.processing_bank_sources import *
 from MasterCard_UseCase.database_actions import *
-from streamlit_modal import Modal
+
 
 
 def upload_all_sources():
@@ -171,24 +170,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
         st.error(f"Error processing Mastercard file {e}")
 
 
-# Function to show a modal confirmation dialog
-def show_modal_confirmation(modal_key, title, message, confirm_action, data, insert_type):
-    modal = Modal(key=modal_key, title=title)
-    if st.button(f':floppy_disk: Stocker résultats de {insert_type}', key=f'sauvegarder_resultats_{modal_key}',type="primary", use_container_width=True):
-        modal.open()
-    with modal.container():
-        st.write(message)
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Yes", key=f"{modal_key}_yes"):
-                confirm_action(data)
-                modal.close()
 
-        with col2:
-            if st.button("No", key=f"{modal_key}_no"):
-                modal.close()
-
-    return modal
 
 def main():
     global uploaded_mastercard_file, uploaded_cybersource_file, uploaded_pos_file, uploaded_sai_manuelle_file, filtering_date, uploaded_recycled_file
