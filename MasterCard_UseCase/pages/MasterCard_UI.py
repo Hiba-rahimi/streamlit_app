@@ -125,7 +125,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
             if st.session_state.df_reconciliated is not None:
                 st.header('Reconciliation Result')
                 st.dataframe(st.session_state.df_reconciliated)
-                col4 ,col5 ,col6 = st.columns(2)
+                col4 ,col5 ,col6 = st.columns(3)
                 with col4:
                     excel_path_email_1 , file_name_1= download_file(recon=True, df=st.session_state.df_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
                 with col5:
@@ -136,7 +136,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
             if st.session_state.df_non_reconciliated is not None:
                 st.header('Reconciliation Result')
                 st.dataframe(st.session_state.df_non_reconciliated.style.apply(highlight_non_reconciliated_row, axis=1))
-                col4 , col6 = st.columns(2)
+                col4 ,col5, col6 = st.columns(3)
                 with col4:
                     excel_path_email_1 , file_name_1= download_file(recon=True, df=st.session_state.df_non_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
                 with col5:
@@ -146,7 +146,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
 
                 st.header('Rejection summary')
                 st.dataframe(st.session_state.df_summary)
-                col7 ,col8, col9 = st.columns(2)
+                col7 ,col8, col9 = st.columns(3)
                 with col7 :
                     excel_path_email_2 , file_name_2 = download_file(recon=False, df=st.session_state.df_summary, file_partial_name='rejected_summary_MC', button_label=":arrow_down: Téléchargez le résumé des rejets", run_date=run_date)
                 with col8:
