@@ -112,7 +112,7 @@ def extract_rejections(mastercard_file, currencies_settings, countries_settings)
     formatted_dates = [f"20{date[0:2]}-{date[2:4]}-{date[4:6]}" for date in matches_transaction_date]
     
     # Create a DataFrame to store the extracted transaction date
-    df_transaction_date = pd.DataFrame({'Transaction Date': formatted_dates})
+    df_transaction_date = pd.DataFrame({'Date Transaction': formatted_dates})
     
     # Define a regular expression pattern to find all groups of "D0031 Sxx" and their values
     pattern_arn = re.compile(r"(D0031 S\d+\s+\*?\d+)")
@@ -197,13 +197,14 @@ def extract_rejections(mastercard_file, currencies_settings, countries_settings)
         start = content.find(identifier, end)
 
     # Create a DataFrame from the descriptions
-    df = pd.DataFrame(descriptions, columns=["Description"])
+    df_motif = pd.DataFrame(descriptions, columns=["Motif"])
 
     # Remove leading and trailing whitespace from each description and replace multiple spaces with a single space
-    df['Description'] = df['Description'].str.strip().replace(r'\s+', ' ', regex=True)
-
+    df_motif['Motif'] = df_motif['Motif'].str.strip().replace(r'\s+', ' ', regex=True)
+    # Create the DataFrame
+    df_reseau = pd.DataFrame({"RESEAU": ["MASTERCARD INTERNATIONAL"] * len(df_extracted_values)})
     # Concatenate all the DataFrames
-    df_rejected = pd.concat([df_extracted_values, df_pays, df_transaction_date, df_arns, df_authorization, df], axis=1)
+    df_rejected = pd.concat([df_pays,df_reseau,df_arns,df_authorization,df_transaction_date,df_extracted_values, df_motif], axis=1)
 
     return df_rejected
 

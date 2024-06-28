@@ -1,10 +1,8 @@
-import streamlit as st
+#import streamlit as st
 import plotly.graph_objects as go
 from MasterCard_UseCase.parser_TT140_MasterCard import *
 from MasterCard_UseCase.processing_bank_sources import *
 from MasterCard_UseCase.database_actions import *
-
-
 
 def upload_all_sources():
     if uploaded_mastercard_file is not None:
@@ -99,7 +97,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                 df_recycled, merged_df, total_nbre_transactions = merging_with_recycled(
                     recycled_file_path, filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df, filtering_date)
                 st.header("Transactions à recycler")
-                st.dataframe(df_recycled)
+                st.dataframe(df_recycled , use_container_width=True)
                 st.write("### Nombre de transactions des sources avec rej. recyc.", total_nbre_transactions)
 
             else:
@@ -133,7 +131,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                     st.button(":email: Insérer le tableau dans un E-mail" , key= 10,type="primary" , use_container_width=True )
 
             if st.session_state.df_non_reconciliated is not None:
-                st.header('Reconciliation Result')
+                st.header('Résultat de la Réconciliation')
                 st.dataframe(st.session_state.df_non_reconciliated.style.apply(highlight_non_reconciliated_row, axis=1))
                 col4 ,col5, col6 = st.columns(3)
                 with col4:
@@ -144,7 +142,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                     st.button(":email: Insérer le tableau dans un E-mail" , key="email_button1",type="primary" , use_container_width=True )
 
                 st.header('Résumé des rejets')
-                st.dataframe(st.session_state.df_summary)
+                st.dataframe(st.session_state.df_summary , use_container_width=True)
                 col7 ,col8, col9 = st.columns(3)
                 with col7 :
                     excel_path_email_2 , file_name_2 = download_file(recon=False, df=st.session_state.df_summary, file_partial_name='rejected_summary_MC', button_label=":arrow_down: Téléchargez le résumé des rejets", run_date=run_date)
@@ -154,7 +152,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                     st.button(":email: Insérer le tableau dans un E-mail" , key= "email_button2",type="primary" , use_container_width=True )
 
                 st.header('Transactions Rejetées')
-                st.dataframe(st.session_state.df_rejections)
+                st.dataframe(st.session_state.df_rejections , use_container_width=True)
                 col10 ,col11 , col12 = st.columns(3)
                 with col10:
                     excel_path_email_3 , file_name_3= download_file(recon=False, df=st.session_state.df_rejections, file_partial_name='rejected_transactions_MC', button_label=":arrow_down: Téléchargez les rejets", run_date=run_date)
@@ -164,13 +162,10 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                     st.button(":email: Insérer le tableau dans un E-mail" , key= "email_button3",type="primary" , use_container_width=True )
 
         else:
-            st.warning("Veuillez télécharger tous les fichiers nécessaires pour continuer.")
+            st.warning("Veuillez charger tous les fichiers nécessaires pour continuer.")
     except Exception as e:
-        st.error(f"Erreur lors du traitement du fichier Mastercard {e}")
-
-
-
-
+        st.error(f"Erreur lors du traitement du fichier Mastercard ")
+        st.write(e)
 def main():
     global uploaded_mastercard_file, uploaded_cybersource_file, uploaded_pos_file, uploaded_sai_manuelle_file, filtering_date, uploaded_recycled_file
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
@@ -182,8 +177,8 @@ def main():
     uploaded_mastercard_file = st.file_uploader(":arrow_down: **Chargez le fichier Mastercard**", type=["001"])
     uploaded_cybersource_file = st.file_uploader(":arrow_down: **Chargez le fichier Cybersource**", type=["csv"])
     uploaded_pos_file = st.file_uploader(":arrow_down: **Chargez le fichier POS**", type=["csv"])
-    uploaded_sai_manuelle_file = st.file_uploader(":arrow_down: **⬇️ Chargez le fichier de saisie manuelle**", type=["csv"])
-    filtering_date = st.date_input("Veuillez entrer la date de filtrage pour les transactions rejetées")
+    uploaded_sai_manuelle_file = st.file_uploader(":arrow_down: Chargez le fichier de saisie manuelle**", type=["csv"])
+    filtering_date = st.date_input("**Veuillez entrer la date du filtrage pour les transactions rejetées**")
     uploaded_recycled_file = st.file_uploader(":arrow_down: **Chargez le fichier des transactions recyclées**", type=["xlsx"])
 
     global run_date , day_after
@@ -202,17 +197,21 @@ def main():
             run_date , day_after, df_cybersource, df_sai_manuelle, df_pos = upload_all_sources()
         except Exception as e:
             st.error(f"Erreur lors du chargement des sources")
+            st.write(e)
+
 
         try:
             filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df = filter_sources(df_cybersource, df_sai_manuelle, df_pos)
         except Exception as e:
             st.error(f"Impossible de traiter les fichiers")
+            st.write(e)
 
         pie_chart()
         try:
             handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df)
         except Exception as e:
             st.error(f"Impossible de continuer avec la réconciliation")
+            st.write(e)
 
     # Handling session state variables based on file uploads
     if not uploaded_mastercard_file and not uploaded_cybersource_file and not uploaded_pos_file and not uploaded_sai_manuelle_file:
@@ -221,6 +220,8 @@ def main():
         st.session_state.df_non_reconciliated = None
         st.session_state.df_summary = None
         st.session_state.df_rejections = None
-        st.warning("Veuillez télécharger tous les fichiers nécessaires pour continuer.")
+        st.warning("Veuillez charger tous les fichiers nécessaires pour continuer.")
+
+
 if __name__ == "__main__":
     main()
