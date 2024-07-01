@@ -15,19 +15,19 @@ def main():
     search_date = st.date_input("**:calendar: Sélectionnez une date de processing  :**", value=datetime.today(), key="search_date")
     formatted_date = search_date.strftime('%Y-%m-%d')
 
-    # Search and display the results when both criteria are provided and the search button is clicked
-    if st.button(":mag_right: **Search**", key="search_button" , type="primary" , use_container_width=True):
-        df_search_results = search_by_transaction_date(formatted_date)
-        if not df_search_results.empty:
-            # Normalize the 'Rapprochement' column to upper case for case-insensitive matching
-            if not df_search_results.empty:
-                st.write("Résultats de Recherche")
-                df_search_results.drop(columns=['_id'], inplace=True)
-                st.dataframe(df_search_results)
-            else:
-                st.warning("Aucun enregistrement trouvé pour la date sélectionnée.")
-        else:
-            st.warning("Aucun enregistrement trouvé pour la date sélectionnée.")
+    # # Search and display the results when both criteria are provided and the search button is clicked
+    # if st.button(":mag_right: **Search**", key="search_button" , type="primary" , use_container_width=True):
+    #     df_search_results = search_by_transaction_date(formatted_date)
+    #     if not df_search_results.empty:
+    #         # Normalize the 'Rapprochement' column to upper case for case-insensitive matching
+    #         if not df_search_results.empty:
+    #             st.write("Résultats de Recherche")
+    #             df_search_results.drop(columns=['_id'], inplace=True)
+    #             st.dataframe(df_search_results)
+    #         else:
+    #             st.warning("Aucun enregistrement trouvé pour la date sélectionnée.")
+    #     else:
+    #         st.warning("Aucun enregistrement trouvé pour la date sélectionnée.")
 
 if __name__ == "__main__":
     main()
