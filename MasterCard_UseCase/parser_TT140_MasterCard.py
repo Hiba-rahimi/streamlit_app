@@ -253,55 +253,55 @@ def extract_total_nbr_transactions_mastercard(file_path):
     
     return sum_of_values
 
-def handle_non_match_reconciliation(file_path,merged_df):
-    if merged_df is None or merged_df.empty:
-        #print("Empty DataFrame or None received for merged_df. Cannot proceed.")
-        return None
-    df_reconciliated = merged_df.copy()
-    # Load the rejected summary data
-    df_rejected_summary = calculate_rejected_summary(file_path)
-
-    # Ensure the relevant columns exist in the reconciliated DataFrame
-    if 'FILIALE' not in df_reconciliated.columns:
-        raise KeyError('The required columns are missing in the reconciliated DataFrame.')
-
-    # Add the columns if they do not exist
-    if 'Rapprochement' not in df_reconciliated.columns:
-        df_reconciliated['Rapprochement'] = 'ok'
-
-    # Create a set of FILIALEs with issues from the rejected summary
-    filiales_with_issues = set(df_rejected_summary['FILIALE'])
-
-    # Update the reconciliated DataFrame
-    df_reconciliated['Rapprochement'] = df_reconciliated['FILIALE'].apply(
-        lambda x: 'not ok' if x in filiales_with_issues else 'ok'
-    )
-
-    # Update Nbre Total de Rejets and Montant de Rejets based on the rejected summary data
-    for index, row in df_rejected_summary.iterrows():
-        filiale = row['FILIALE']
-        nbr_rejets = row['Nbre Total de Rejets']
-        montant_rejets = row['Montant de Rejets']
-
-        # Find the matching row in the reconciliated DataFrame
-        match_idx = df_reconciliated[df_reconciliated['FILIALE'] == filiale].index
-
-        if not match_idx.empty:
-            # Update the matching row
-            df_reconciliated.loc[match_idx, 'Nbre Total de Rejets'] = nbr_rejets
-            df_reconciliated.loc[match_idx, 'Montant de Rejets'] = montant_rejets
-            df_reconciliated['Montant de Transactions (Couverture)'] = df_reconciliated['Montant Total de Transactions']
-            df_reconciliated['Nbre de Transactions (Couverture)'] = df_reconciliated['Nbre Total De Transactions']
-
-    # Fill NaN values in 'Nbre Total de Rejets' with 0 before converting to integer type
-    df_reconciliated['Nbre Total de Rejets'] = df_reconciliated['Nbre Total de Rejets'].replace('', 0).fillna(0).astype(int)
-    return df_reconciliated
+# def handle_non_match_reconciliation(file_path,merged_df):
+#     if merged_df is None or merged_df.empty:
+#         #print("Empty DataFrame or None received for merged_df. Cannot proceed.")
+#         return None
+#     df_reconciliated = merged_df.copy()
+#     # Load the rejected summary data
+#     df_rejected_summary = calculate_rejected_summary(file_path)
+#
+#     # Ensure the relevant columns exist in the reconciliated DataFrame
+#     if 'FILIALE' not in df_reconciliated.columns:
+#         raise KeyError('The required columns are missing in the reconciliated DataFrame.')
+#
+#     # Add the columns if they do not exist
+#     if 'Rapprochement' not in df_reconciliated.columns:
+#         df_reconciliated['Rapprochement'] = 'ok'
+#
+#     # Create a set of FILIALEs with issues from the rejected summary
+#     filiales_with_issues = set(df_rejected_summary['FILIALE'])
+#
+#     # Update the reconciliated DataFrame
+#     df_reconciliated['Rapprochement'] = df_reconciliated['FILIALE'].apply(
+#         lambda x: 'not ok' if x in filiales_with_issues else 'ok'
+#     )
+#
+#     # Update Nbre Total de Rejets and Montant de Rejets based on the rejected summary data
+#     for index, row in df_rejected_summary.iterrows():
+#         filiale = row['FILIALE']
+#         nbr_rejets = row['Nbre Total de Rejets']
+#         montant_rejets = row['Montant de Rejets']
+#
+#         # Find the matching row in the reconciliated DataFrame
+#         match_idx = df_reconciliated[df_reconciliated['FILIALE'] == filiale].index
+#
+#         if not match_idx.empty:
+#             # Update the matching row
+#             df_reconciliated.loc[match_idx, 'Nbre Total de Rejets'] = nbr_rejets
+#             df_reconciliated.loc[match_idx, 'Montant de Rejets'] = montant_rejets
+#             df_reconciliated['Montant de Transactions (Couverture)'] = df_reconciliated['Montant Total de Transactions']
+#             df_reconciliated['Nbre de Transactions (Couverture)'] = df_reconciliated['Nbre Total De Transactions']
+#
+#     # Fill NaN values in 'Nbre Total de Rejets' with 0 before converting to integer type
+#     df_reconciliated['Nbre Total de Rejets'] = df_reconciliated['Nbre Total de Rejets'].replace('', 0).fillna(0).astype(int)
+#     return df_reconciliated
 
 def parse_t140_MC(mastercard_file_path):
     if mastercard_file_path is None or len(mastercard_file_path) == 0:
         #print("Empty file path received. Cannot proceed.")
         return None, None, None
-    
+
     nbr_total_MC = extract_total_nbr_transactions_mastercard(mastercard_file_path)
     summary_df = calculate_rejected_summary(mastercard_file_path)
     rejeted_df = extract_rejections(mastercard_file_path, currencies_settings, countries_settings)

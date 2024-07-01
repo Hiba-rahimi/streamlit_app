@@ -44,7 +44,7 @@ def upload_all_sources():
             validate_file_name_and_date(uploaded_sai_manuelle_file.name, 'SAIS_MANU', date_to_validate=day_after)
             df_sai_manuelle = reading_saisie_manuelle(sai_manuelle_file_path)
             mastercard_transactions_sai_manuelle = df_sai_manuelle[df_sai_manuelle['RESEAU'] == 'MASTERCARD INTERNATIONAL']
-            total_transactions['Manual Entry'] = mastercard_transactions_sai_manuelle['NBRE_TRANSACTION'].sum()
+            total_transactions['Saisie Manuelle'] = mastercard_transactions_sai_manuelle['NBRE_TRANSACTION'].sum()
     except Exception as e:
         st.error(f"Erreur lors du traitement du fichier de Saisie Manuelle :{e}")
 
@@ -59,7 +59,7 @@ def filter_sources(df_cybersource, df_sai_manuelle, df_pos):
 
 
 def pie_chart():
-    if total_transactions['Cybersource'] > 0 or total_transactions['POS'] > 0 or total_transactions['Manual Entry'] > 0:
+    if total_transactions['Cybersource'] > 0 or total_transactions['POS'] > 0 or total_transactions['Saisie Manuelle'] > 0:
         st.header("	:bar_chart:  Répartition des transactions par source", divider='grey')
 
         def create_interactive_pie_chart(total_transactions):
@@ -92,8 +92,8 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
 
             if uploaded_recycled_file:
                 recycled_file_path = save_uploaded_file(uploaded_recycled_file)
-                df_recyc = pd.read_excel(recycled_file_path)
-                st.write("La date du filtrage ", filtering_date)
+                # df_recyc = pd.read_excel(recycled_file_path)
+                st.write("La date du filtrage : ", filtering_date)
                 df_recycled, merged_df, total_nbre_transactions = merging_with_recycled(
                     recycled_file_path, filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df, filtering_date)
                 st.header("Transactions à recycler")
@@ -104,42 +104,50 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                 merged_df, total_nbre_transactions = merging_sources_without_recycled(
                     filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df)
                 st.write("### Nombre de transactions des sources sans rej. recyc.", total_nbre_transactions)
-                st.warning("Le fichier de transactions à recycler n'a pas été chargé. La réconciliation sera effectuée sans les transactions recyclées.")
+                st.warning("Le fichier de transactions à recycler n'a pas été chargé."
+                           " La réconciliation sera effectuée sans les transactions recyclées.")
             col2.metric("**Nombre total de transactions dans les fichiers :**", value=total_nbre_transactions)
-            col3.metric("___Difference___", value=abs(nbr_total_MC - total_nbre_transactions), help="The net difference in transactions between the two sides is")
+            col3.metric("___Difference___", value=abs(nbr_total_MC - total_nbre_transactions),
+                        help="La différence nette des transactions entre les deux côtés est")
 
             if st.button('Réconcilier', type="primary", use_container_width=True):
                 if nbr_total_MC == total_nbre_transactions:
                     st.header('Résulat de la réconciliation')
-                    st.session_state.df_reconciliated = handle_exact_match_csv(merged_df)
+                    st.session_state.df_reconciliated = handle_exact_match_csv(merged_df , run_date=run_date)
                     st.success("Réconciliation faite sans écart")
+                    st.divider()
+
                 else:
-                    st.session_state.df_non_reconciliated = handle_non_match_reconciliation(mastercard_file_path, merged_df)
-                    st.session_state.df_summary = calculate_rejected_summary(mastercard_file_path)
-                    st.session_state.df_rejections = extract_rejections(mastercard_file_path, currencies_settings, countries_settings)
-                    st.warning("Réconciliation faite avec un écart")
+                        st.session_state.df_non_reconciliated = handle_non_match_reconciliation(mastercard_file_path, merged_df , run_date=run_date)
+                        st.session_state.df_summary = calculate_rejected_summary(mastercard_file_path)
+                        st.session_state.df_rejections = extract_rejections(mastercard_file_path, currencies_settings, countries_settings)
+                        st.warning("Réconciliation faite avec un écart")
+                        st.divider()
+
             # Always display the dataframes stored in session state
             if st.session_state.df_reconciliated is not None:
                 st.header('Résulat de la réconciliation')
                 st.dataframe(st.session_state.df_reconciliated)
-                col4 ,col5 ,col6 = st.columns(3)
+                col4, col5, col6 = st.columns(3)
                 with col4:
                     excel_path_email_1 , file_name_1= download_file(recon=True, df=st.session_state.df_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
                 with col5:
                     st.button(":floppy_disk: Stocker le résultat de réconciliation" , on_click= lambda: insert_reconciliated_data(st.session_state.df_reconciliated) , key= "stocker_button1",type="primary" , use_container_width=True)
                 with col6:
-                    st.button(":email: Insérer le tableau dans un E-mail" , key= 10,type="primary" , use_container_width=True )
+                    st.button(":email: Insérer le tableau dans un E-mail" , on_click= lambda : send_excel_contents_to_outlook(excel_path_email_1, file_name_1) ,key= 10,type="primary" , use_container_width=True )
+                st.divider()
 
             if st.session_state.df_non_reconciliated is not None:
                 st.header('Résultat de la Réconciliation')
                 st.dataframe(st.session_state.df_non_reconciliated.style.apply(highlight_non_reconciliated_row, axis=1))
-                col4 ,col5, col6 = st.columns(3)
+                col4, col5, col6 = st.columns(3)
                 with col4:
                     excel_path_email_1 , file_name_1= download_file(recon=True, df=st.session_state.df_non_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
                 with col5:
                     st.button(":floppy_disk: Stocker le résultat de réconciliation " , on_click= lambda: insert_reconciliated_data(st.session_state.df_non_reconciliated) , key= "stocker_button2",type="primary" , use_container_width=True)
                 with col6:
-                    st.button(":email: Insérer le tableau dans un E-mail" , key="email_button1",type="primary" , use_container_width=True )
+                    st.button(":email: Insérer le tableau dans un E-mail" , on_click= lambda : send_excel_contents_to_outlook(excel_path_email_1, file_name_1) ,  key="email_button1",type="primary" , use_container_width=True )
+                st.divider()
 
                 st.header('Résumé des rejets')
                 st.dataframe(st.session_state.df_summary , use_container_width=True)
@@ -149,7 +157,8 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                 with col8:
                     st.button(":floppy_disk: Stocker le résumé des rejets " , on_click= lambda: insert_rejection_summary(st.session_state.df_summary) , key= "stocker_button3",type="primary" , use_container_width=True)
                 with col9:
-                    st.button(":email: Insérer le tableau dans un E-mail" , key= "email_button2",type="primary" , use_container_width=True )
+                    st.button(":email: Insérer le tableau dans un E-mail",on_click= lambda : send_excel_contents_to_outlook(excel_path_email_2, file_name_2) , key= "email_button2",type="primary" , use_container_width=True )
+                st.divider()
 
                 st.header('Transactions Rejetées')
                 st.dataframe(st.session_state.df_rejections , use_container_width=True)
@@ -157,12 +166,12 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                 with col10:
                     excel_path_email_3 , file_name_3= download_file(recon=False, df=st.session_state.df_rejections, file_partial_name='rejected_transactions_MC', button_label=":arrow_down: Téléchargez les rejets", run_date=run_date)
                 with col11:
-                    st.button(":floppy_disk: Stocker les rejets " , on_click= lambda: insert_rejection_summary(st.session_state.df_rejections) , key= "stocker_button4",type="primary" , use_container_width=True)
+                    st.button(":floppy_disk: Stocker les rejets " , on_click= lambda: insert_rejected_transactions(st.session_state.df_rejections) , key= "stocker_button4",type="primary" , use_container_width=True)
                 with col12:
-                    st.button(":email: Insérer le tableau dans un E-mail" , key= "email_button3",type="primary" , use_container_width=True )
+                    st.button(":email: Insérer le tableau dans un E-mail" , on_click= lambda : send_excel_contents_to_outlook(excel_path_email_3, file_name_3) ,key= "email_button3",type="primary" , use_container_width=True )
 
         else:
-            st.warning("Veuillez charger tous les fichiers nécessaires pour continuer.")
+            st.warning("Veuillez charger tous les fichiers nécessaires pour procéder.")
     except Exception as e:
         st.error(f"Erreur lors du traitement du fichier Mastercard ")
         st.write(e)
@@ -173,12 +182,15 @@ def main():
     st.sidebar.page_link("app.py", label="**Accueil**" , icon="🏠")
     st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
     st.sidebar.page_link("pages/MasterCard_UI.py", label="  **🔀 MasterCard Network Reconciliaiton Option**" )
-    st.header("📤 :violet[Veuillez charger les fichiers nécessaires pour la réconciliation avec le rapport Mastercard]", divider='rainbow')
+    st.sidebar.page_link("pages/calendar_view.py", label="**📆 Calendrier**")
+    st.header(":credit_card: :violet[Réconciliation MasterCard ]", divider='blue')
     uploaded_mastercard_file = st.file_uploader(":arrow_down: **Chargez le fichier Mastercard**", type=["001"])
     uploaded_cybersource_file = st.file_uploader(":arrow_down: **Chargez le fichier Cybersource**", type=["csv"])
     uploaded_pos_file = st.file_uploader(":arrow_down: **Chargez le fichier POS**", type=["csv"])
-    uploaded_sai_manuelle_file = st.file_uploader(":arrow_down: Chargez le fichier de saisie manuelle**", type=["csv"])
+    uploaded_sai_manuelle_file = st.file_uploader(":arrow_down: **Chargez le fichier du saisie manuelle**", type=["csv"])
+    st.divider()
     filtering_date = st.date_input("**Veuillez entrer la date du filtrage pour les transactions rejetées**")
+    st.divider()
     uploaded_recycled_file = st.file_uploader(":arrow_down: **Chargez le fichier des transactions recyclées**", type=["xlsx"])
 
     global run_date , day_after
@@ -191,7 +203,7 @@ def main():
 
     if uploaded_mastercard_file :
 
-        total_transactions = {'Cybersource': 0, 'POS': 0, 'Manual Entry': 0}
+        total_transactions = {'Cybersource': 0, 'POS': 0, 'Saisie Manuelle': 0}
 
         try:
             run_date , day_after, df_cybersource, df_sai_manuelle, df_pos = upload_all_sources()
@@ -221,7 +233,6 @@ def main():
         st.session_state.df_summary = None
         st.session_state.df_rejections = None
         st.warning("Veuillez charger tous les fichiers nécessaires pour continuer.")
-
 
 if __name__ == "__main__":
     main()

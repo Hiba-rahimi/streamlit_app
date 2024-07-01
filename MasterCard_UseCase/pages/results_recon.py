@@ -8,11 +8,12 @@ def main():
     st.sidebar.page_link("app.py", label="**Accueil**" , icon="🏠")
     st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
     st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 MasterCard Network Reconciliaiton Option**" )
+    st.sidebar.page_link("pages/calendar_view.py", label="**📆 Vue Agenda**")
     st.header("Historique de Réconciliation" , divider= 'rainbow')
     st.write("  ")
     # Create date input and selectbox for multi-criteria search
-    search_date = st.date_input("**Sélectionnez une date de processing : :**", value=datetime.today(), key="search_date")
-    formatted_date = search_date.strftime('%d-%b-%y').upper()
+    search_date = st.date_input("**:calendar: Sélectionnez une date de processing  :**", value=datetime.today(), key="search_date")
+    formatted_date = search_date.strftime('%Y-%m-%d')
 
     # Search and display the results when both criteria are provided and the search button is clicked
     if st.button(":mag_right: **Search**", key="search_button" , type="primary" , use_container_width=True):
