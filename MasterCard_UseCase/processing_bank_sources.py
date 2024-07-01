@@ -8,11 +8,9 @@ from openpyxl.styles import PatternFill
 import openpyxl
 from openpyxl.styles import Font, PatternFill, Alignment, numbers
 from openpyxl.worksheet.table import Table, TableStyleInfo
-#import win32com.client as win32
+import win32com.client as win32
 import streamlit as st
 import io
-#from streamlit_modal import Modal
-from openpyxl import Workbook
 
 pd.set_option('future.no_silent_downcasting', True)
 pd.options.display.float_format = '{:,.2f}'.format
@@ -345,9 +343,12 @@ def populating_table_reconcialited(merged_df):
     merged_df = merged_df[new_columns]
     return merged_df
 
-def handle_exact_match_csv(merged_df):
+def handle_exact_match_csv(merged_df , run_date):
     populating_table_reconcialited(merged_df)
     df_reconciliated = merged_df.copy()
+    run_date_new = pd.to_datetime(run_date, format='%y-%m-%d')
+    formatted_date = run_date_new.strftime('%Y-%m-%d')
+    df_reconciliated['Date'] = formatted_date
     df_reconciliated['Rapprochement'] = 'ok'
     df_reconciliated['Montant de Transactions (Couverture)'] = df_reconciliated['Montant Total de Transactions']
     df_reconciliated['Nbre de Transactions (Couverture)'] = df_reconciliated['Nbre Total De Transactions']
@@ -355,7 +356,7 @@ def handle_exact_match_csv(merged_df):
     #df_reconciliated.to_csv('reconciliated.csv', index=False)
     return df_reconciliated
 
-def handle_non_match_reconciliation(file_path,merged_df):
+def handle_non_match_reconciliation(file_path,merged_df , run_date):
     populating_table_reconcialited(merged_df)
     df_reconciliated = merged_df.copy()
     # Load the rejected summary data
@@ -395,8 +396,11 @@ def handle_non_match_reconciliation(file_path,merged_df):
 
     # Fill NaN values in 'Nbre Total de Rejets' with 0 before converting to integer type
     df_reconciliated['Nbre Total de Rejets'] = df_reconciliated['Nbre Total de Rejets'].replace('', 0).fillna(0).astype(int)
+    run_date_new = pd.to_datetime(run_date, format='%y-%m-%d')
+    formatted_date = run_date_new.strftime('%Y-%m-%d')
+    df_reconciliated['Date'] = formatted_date
     df_reconciliated = format_columns(df_reconciliated)
-    # Save the updated DataFrame to a CSV file
+    #Save the updated DataFrame to a CSV file
     #df_reconciliated.to_csv('reconciliated.csv', index=False)
     return df_reconciliated
 
@@ -551,25 +555,25 @@ def save_excel_locally(excel_path , file_name):
     
     return file_path  # Return the file path
 
-# def send_excel_contents_to_outlook(excel_path , file_name):
-#     try:
-#         # Save Excel file locally
-#         excel_file_path = save_excel_locally(excel_path , file_name)
+def send_excel_contents_to_outlook(excel_path , file_name):
+    try:
+        # Save Excel file locally
+        excel_file_path = save_excel_locally(excel_path , file_name)
         
-#         # Connect to Outlook
-#         outlook = win32.Dispatch("Outlook.Application")
+        # Connect to Outlook
+        outlook = win32.Dispatch("Outlook.Application")
 
-#         # Create a new email
-#         mail = outlook.CreateItem(0)
+        # Create a new email
+        mail = outlook.CreateItem(0)
         
-#         # Attach Excel file
-#         mail.Attachments.Add(excel_file_path)
+        # Attach Excel file
+        mail.Attachments.Add(excel_file_path)
         
-#         # Display the Outlook application with the composed email
-#         mail.Display(True)  # True opens the email in a new window
+        # Display the Outlook application with the composed email
+        mail.Display(True)  # True opens the email in a new window
 
-    # except Exception as e:
-    #     st.error(f"Error occurred while sending the email: {e}")
+    except Exception as e:
+        st.error(f"Error occurred while sending the email: {e}")
     # def show_modal_confirmation(modal_key, title, message, confirm_action, data, insert_type):
     #     modal = Modal(key=modal_key, title=title)
     #
