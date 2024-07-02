@@ -24,14 +24,14 @@ def run():
     st.sidebar.page_link("pages/Dashboard.py", label="  **📊 Tableau de bord**" )
     st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 MasterCard Network Reconciliaiton Option**")
     st.sidebar.page_link("pages/calendar_view.py", label="**📆 Vue Agenda**")
-    st.write("# Bienvenue ! 👋")
-    # with open(os.path.join(assets_dir, "animated-logo.gif"), "rb") as file_:
-    #     contents = file_.read()
-    # data_url = base64.b64encode(contents).decode("utf-8")
-    # st.markdown(
-    #     f'<div style="display: flex; justify-content: center; align-items: flex-start;"><img src="data:image/gif;base64,{data_url}" alt="logo animation gif" width="auto" height="400"></div>',
-    #     unsafe_allow_html=True,
-    # )
+    #st.write("# Bienvenue ! 👋")
+    with open(os.path.join(assets_dir, "animated-logo-v2.gif"), "rb") as file_:
+        contents = file_.read()
+    data_url = base64.b64encode(contents).decode("utf-8")
+    st.markdown(
+        f'<div style="display: flex; justify-content: center; align-items: flex-start;"><img src="data:image/gif;base64,{data_url}" alt="logo animation gif" width="auto" height="400"></div>',
+        unsafe_allow_html=True,
+    )
 
     # HTML and CSS for the data cards with images
     code = f"""
