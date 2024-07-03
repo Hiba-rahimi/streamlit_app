@@ -16,15 +16,16 @@ def run():
 
     st.set_page_config(page_title="Bank Recon",
                        page_icon=os.path.join(assets_dir, "logo.png"),
-                       layout="wide")
+                       layout="wide",
+                       initial_sidebar_state="expanded")
     st.sidebar.image(os.path.join(assets_dir, "Logo_hps_0.png"), use_column_width=True)
     st.sidebar.divider()
     st.sidebar.page_link("app.py", label="**Accueil**", icon="🏠")
     st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
-    st.sidebar.page_link("pages/Dashboard.py", label="  **📊 Tableau de bord**" )
+    st.sidebar.page_link("pages/Dashboard.py", label="**📊 Tableau de bord**" )
     st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 MasterCard Network Reconciliaiton Option**")
     st.sidebar.page_link("pages/calendar_view.py", label="**📆 Vue Agenda**")
-    #st.write("# Bienvenue ! 👋")
+    # st.title("Bienvenue ! 👋")
     with open(os.path.join(assets_dir, "animated-logo-v2.gif"), "rb") as file_:
         contents = file_.read()
     data_url = base64.b64encode(contents).decode("utf-8")
