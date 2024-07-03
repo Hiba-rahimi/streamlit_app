@@ -50,9 +50,9 @@ def upload_all_sources():
 
     return run_date, day_after,df_cybersource, df_sai_manuelle, df_pos
 
-def filter_sources(df_cybersource, df_sai_manuelle, df_pos):
+def filter_sources(df_cybersource, df_sai_manuelle, df_pos  ):
     try:
-        filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df = filtering_sources(df_cybersource, df_sai_manuelle, df_pos)
+        filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df = filtering_sources(df_cybersource,df_sai_manuelle, df_pos, 'MASTERCARD INTERNATIONAL')
         return filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df
     except Exception as e:
         st.error(f"Erreur lors du filtrage des fichiers source :{e}")

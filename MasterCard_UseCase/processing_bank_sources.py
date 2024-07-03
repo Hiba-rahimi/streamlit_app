@@ -109,13 +109,14 @@ def reading_pos(pos_file):
         df_pos = pd.DataFrame(columns=default_columns_pos)
         #print("The POS file does not exist at the specified path.")
 
-def filtering_sources(df_cybersource, df_sai_manuelle, df_pos):
-    # Filter each source to get MASTERCARD network transactions
-    filtered_cybersource_df = df_cybersource[df_cybersource['RESEAU'] == 'MASTERCARD INTERNATIONAL']
-    filtered_saisie_manuelle_df = df_sai_manuelle[df_sai_manuelle['RESEAU'] == 'MASTERCARD INTERNATIONAL']
-    filtered_pos_df = df_pos[(df_pos['RESEAU'] == 'MASTERCARD INTERNATIONAL') & 
-                         (~df_pos['TYPE_TRANSACTION'].str.endswith('_MDS'))]
+def filtering_sources(df_cybersource, df_sai_manuelle, df_pos, RESEAU):
+    # Filter each source to get transactions matching the RESEAU
+    filtered_cybersource_df = df_cybersource[df_cybersource['RESEAU'] == RESEAU]
+    filtered_saisie_manuelle_df = df_sai_manuelle[df_sai_manuelle['RESEAU'] == RESEAU]
+    filtered_pos_df = df_pos[(df_pos['RESEAU'] == RESEAU) &
+                             (~df_pos['TYPE_TRANSACTION'].str.endswith('_MDS'))]
     return filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df
+
 
 
 def validate_file_name_and_date(file_name, source, date_to_validate=None):
