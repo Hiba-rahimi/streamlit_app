@@ -1,7 +1,7 @@
 import streamlit as st
 from datetime import datetime
 from MasterCard_UseCase.database_actions import *
-from processing_bank_sources import *
+from MasterCard_UseCase.processing_bank_sources import *
 
 def main():
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
