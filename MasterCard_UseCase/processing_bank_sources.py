@@ -256,59 +256,62 @@ def merging_sources_without_recycled(filtered_cybersource_df, filtered_saisie_ma
     return merged_df , total_nbre_transactions
 
 
-def merging_with_recycled(recycled_rejected_file,filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df, filtering_date):
+
+
+def merging_with_recycled(recycled_rejected_file, filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df, filtering_date):
+    # Merging the initial data sources
     df_merged, _ = merging_sources_without_recycled(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df)
-    df_recycled = excel_to_csv_to_df(recycled_rejected_file)    
+
+    # Processing the recycled data
+    df_recycled = excel_to_csv_to_df(recycled_rejected_file)
     df_recycled.columns = df_recycled.columns.str.strip()
     df_recycled = df_recycled.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
     df_recycled.rename(columns={'BANQUE': 'FILIALE'}, inplace=True)
     df_recycled['Date Retraitement'] = standardize_date_format(df_recycled['Date Retraitement'])
-    # Filter rows where 'Date_Retraitement' is not equal to the specified date
-    
+
+    # Filtering recycled data based on the date
     df_recycled = df_recycled[df_recycled['Date Retraitement'] == filtering_date.strftime('%Y-%m-%d')]
-    
     df_recycled.drop_duplicates(subset=['FILIALE', 'RESEAU', 'ARN', 'Autorisation', 'Date Transaction', 'Montant', 'Devise'], inplace=True)
-    # Normalize 'FILIALE' values
+
+    # Normalizing 'FILIALE' values
     df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace("COTE D'IVOIRE", "COTE D IVOIRE")
-
-    # Remove any commas and spaces from the 'Montant' column and convert it to numeric
-    # df_recycled['Montant'] = df_recycled['Montant'].astype(str)  # Ensure all values are strings
-    # df_recycled['Montant'] = df_recycled['Montant'].str.replace(',', '').str.replace(' ', '')  # Remove commas and spaces
-    #df_recycled['Montant'] = df_recycled['Montant'].astype(float)  # Convert to float
-
-    # Normalize 'FILIALE' values
     df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace('SG-', 'SG - ')
 
-    # Group by FILIALE and RESEAU and calculate the count and sum of Montant
+    # Grouping by FILIALE and RESEAU and calculating the count and sum of Montant
     summary = df_recycled.groupby(['FILIALE', 'RESEAU']).agg(
         NBRE_TRANSACTION=('Montant', 'count'),
         MONTANT_TOTAL=('Montant', 'sum')
     ).reset_index()
 
-    # Merge the summary DataFrame into the corresponding 'FILIALE' values of the 'df_merged' DataFrame
-    merged_df = df_merged.merge(summary, on=['FILIALE', 'RESEAU'], how='left', suffixes=('_merged', '_summary'))
+    # Custom merge function to ensure merge only happens once for each FILIALE and RESEAU
+    def custom_merge(df_merged, summary):
+        merged_rows = []
+        for idx, row in df_merged.iterrows():
+            filiale = row['FILIALE']
+            reseau = row['RESEAU']
+
+            # Find matching row in summary
+            match = summary[(summary['FILIALE'] == filiale) & (summary['RESEAU'] == reseau)]
+            if not match.empty:
+                # Merge and append the first matching row, then drop it from summary to ensure it only merges once
+                summary = summary.drop(match.index)
+                merged_row = row.copy()
+                merged_row['NBRE_TRANSACTION'] = row['NBRE_TRANSACTION'] + match.iloc[0]['NBRE_TRANSACTION']
+                merged_row['MONTANT_TOTAL'] = row['MONTANT_TOTAL'] + match.iloc[0]['MONTANT_TOTAL']
+                merged_rows.append(merged_row)
+            else:
+                merged_rows.append(row)
+
+        return pd.DataFrame(merged_rows)
+
+    # Apply the custom merge function
+    merged_df = custom_merge(df_merged, summary)
 
     # Fill NaN values with 0
     merged_df.fillna(0, inplace=True)
 
-    # Sum the values of 'NBRE_TRANSACTION_merged' and 'NBRE_TRANSACTION_summary' columns and assign it to 'NBRE_TRANSACTION'
-    merged_df['NBRE_TRANSACTION'] = merged_df['NBRE_TRANSACTION_merged'] + merged_df['NBRE_TRANSACTION_summary']
-
-    # Drop unnecessary columns
-    merged_df.drop(['NBRE_TRANSACTION_merged', 'NBRE_TRANSACTION_summary'], axis=1, inplace=True)
-
-    # Sum the values of 'MONTANT_TOTAL_merged' and 'MONTANT_TOTAL_summary' columns and assign it to 'MONTANT_TOTAL'
-    merged_df['MONTANT_TOTAL'] = merged_df['MONTANT_TOTAL_merged'] + merged_df['MONTANT_TOTAL_summary']
-
-    # Drop unnecessary columns
-    merged_df.drop(['MONTANT_TOTAL_merged', 'MONTANT_TOTAL_summary'], axis=1, inplace=True)
-
-    # Convert 'NBRE_TRANSACTION' to integers
-    merged_df['NBRE_TRANSACTION'] = merged_df['NBRE_TRANSACTION'].astype(int)
-
     total_nbre_transactions = merged_df['NBRE_TRANSACTION'].sum()
     #print(total_nbre_transactions)
-
 
     return df_recycled, merged_df, total_nbre_transactions
 
@@ -404,7 +407,26 @@ def handle_non_match_reconciliation(file_path,merged_df , run_date):
     #Save the updated DataFrame to a CSV file
     #df_reconciliated.to_csv('reconciliated.csv', index=False)
     return df_reconciliated
+def handling_recycled(recycled_path, filtering_date):
+    # Processing the recycled data
+    df_recycled = excel_to_csv_to_df(recycled_path)
 
+    df_recycled.columns = df_recycled.columns.str.strip()
+    df_recycled = df_recycled.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
+    df_recycled.rename(columns={'BANQUE': 'FILIALE'}, inplace=True)
+    df_recycled['Date Retraitement'] = standardize_date_format(df_recycled['Date Retraitement'])
+
+    # Filtering recycled data based on the date
+    df_recycled = df_recycled[df_recycled['Date Retraitement'] == filtering_date.strftime('%Y-%m-%d')]
+    df_recycled.drop_duplicates(subset=['FILIALE', 'RESEAU', 'ARN', 'Autorisation', 'Date Transaction', 'Montant', 'Devise'], inplace=True)
+
+    # Normalizing 'FILIALE' values
+    df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace("COTE D'IVOIRE", "COTE D IVOIRE")
+    df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace('SG-', 'SG - ')
+    total_transactions_recycled = len(df_recycled)
+    st.write("debugging vvv")
+    st.dataframe(df_recycled)
+    return df_recycled , total_transactions_recycled
 
 def blue_style_and_save_to_excel(df):
     """

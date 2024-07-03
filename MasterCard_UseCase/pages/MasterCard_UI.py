@@ -47,7 +47,14 @@ def upload_all_sources():
             total_transactions['Saisie Manuelle'] = mastercard_transactions_sai_manuelle['NBRE_TRANSACTION'].sum()
     except Exception as e:
         st.error(f"Erreur lors du traitement du fichier de Saisie Manuelle :{e}")
-
+    # try:
+    #     if uploaded_recycled_file:
+    #         __ , num = handling_recycled(uploaded_recycled_file,filtering_date= filtering_date)
+    #     total_transactions['Transactions Recyclées'] = num
+    #     st.write(num)
+    #     st.write(total_transactions)
+    # except Exception as e:
+    #     st.error(f"Couldn't filter recyled file")
     return run_date, day_after,df_cybersource, df_sai_manuelle, df_pos
 
 def filter_sources(df_cybersource, df_sai_manuelle, df_pos  ):
