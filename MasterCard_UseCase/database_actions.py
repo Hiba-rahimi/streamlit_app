@@ -212,12 +212,160 @@ def count_rapprochement_by_filiale():
         print(f'Error counting records by Rapprochement and Filiale: {str(e)}')
         return pd.DataFrame()
 
-def sum_montants_by_filiale():
+def sum_montants_by_filiale(filter_last_30_days=False):
     """
-    Calculate the sum of Montant Total de Transactions for each Filiale.
+    Calculate the sum of Montant Total de Transactions for each Filiale and concatenate it with Devise.
+    Optionally filter transactions to include only those from the last 30 days.
+
+    Args:
+    filter_last_30_days (bool): If True, filter transactions to include only those from the last 30 days.
 
     Returns:
-    pd.DataFrame: DataFrame containing the sum of Montant Total de Transactions for each Filiale.
+    pd.DataFrame: DataFrame containing the sum of Montant Total de Transactions for each Filiale, concatenated with Devise.
+    """
+    try:
+        pipeline = []
+
+        if filter_last_30_days:
+            # Calculate the date 30 days ago from today
+            thirty_days_ago = datetime.now() - timedelta(days=30)
+            thirty_days_ago_str = thirty_days_ago.strftime('%Y-%m-%d')
+            pipeline.append({
+                "$match": {
+                    "Date": { "$gte": thirty_days_ago_str }
+                }
+            })
+
+        pipeline.extend([
+            {
+                "$project": {
+                    "FILIALE": 1,
+                    "Montant de Transactions (Couverture)": {
+                        "$replaceAll": {  # Remove commas from the montant string
+                            "input": "$Montant de Transactions (Couverture)",
+                            "find": ",",
+                            "replacement": ""
+                        }
+                    },
+                    "Devise": 1  # Include Devise field
+                }
+            },
+            {
+                "$project": {
+                    "FILIALE": 1,
+                    "Montant de Transactions (Couverture)": {
+                        "$trim": {  # Remove any extra spaces from the montant string
+                            "input": "$Montant de Transactions (Couverture)"
+                        }
+                    },
+                    "Devise": 1  # Pass Devise field to the next stage
+                }
+            },
+            {
+                "$project": {
+                    "FILIALE": 1,
+                    "Montant de Transactions (Couverture)": {
+                        "$substrCP": [  # Extract numeric part of the montant string
+                            "$Montant de Transactions (Couverture)",
+                            0,
+                            { "$subtract": [ { "$strLenCP": "$Montant de Transactions (Couverture)" }, 3 ] }  # Remove the last three characters (e.g., ".00")
+                        ]
+                    },
+                    "Devise": 1  # Pass Devise field to the next stage
+                }
+            },
+            {
+                "$project": {
+                    "FILIALE": 1,
+                    "Montant de Transactions (Couverture)": {  # Convert string to float
+                        "$toDouble": "$Montant de Transactions (Couverture)"
+                    },
+                    "Devise": 1  # Pass Devise field to the next stage
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$FILIALE",
+                    "total_montant": { "$sum": "$Montant de Transactions (Couverture)" },  # Sum up the montants
+                    "Devise": { "$first": "$Devise" }  # Get the Devise for each Filiale
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "FILIALE": "$_id",
+                    "Montant de Transactions (Couverture)": "$total_montant",
+                    "Devise": "$Devise"
+                }
+            },
+            {
+                "$sort": { "Montant de Transactions (Couverture)": -1 }  # Sort by total montant in descending order
+            }
+        ])
+
+        results = collection_recon_results.aggregate(pipeline)
+        df_montants = pd.DataFrame(list(results))
+
+        return df_montants
+
+    except Exception as e:
+        print(f'Error calculating sum of Montant Total de Transactions by Filiale: {str(e)}')
+        return pd.DataFrame()
+
+
+
+def count_rejected_by_filiale(last_30_days=False):
+    """
+    Count the number of rejected transactions grouped by Filiale.
+
+    Parameters:
+    last_30_days (bool): If True, counts the number of rejected transactions in the last 30 days.
+
+    Returns:
+    pd.DataFrame: DataFrame containing the count of rejected transactions for each Filiale.
+    """
+    try:
+        pipeline = []
+
+        if last_30_days:
+            # Calculate the date 30 days ago from today
+            thirty_days_ago = datetime.now() - timedelta(days=30)
+            thirty_days_ago_str = thirty_days_ago.strftime('%y-%m-%d')
+            print("30 jours")
+            print(thirty_days_ago_str)
+            pipeline.append({
+                "$match": {
+                    "rejected_date": {"$gte": thirty_days_ago_str}
+                }
+            })
+
+        pipeline.extend([
+            {
+                "$group": {
+                    "_id": "$FILIALE",
+                    "Rejected Count": {"$sum": 1}  # Count the number of rejected transactions
+                }
+            },
+            {
+                "$sort": {"Rejected Count": -1}  # Sort by the number of rejected transactions in descending order
+            }
+        ])
+
+        results = collection_results_rejects.aggregate(pipeline)
+        df_rejected_counts = pd.DataFrame(list(results))
+        df_rejected_counts.rename(columns={'_id': 'FILIALE', 'Rejected Count': 'Nombre de Rejets'}, inplace=True)
+
+        return df_rejected_counts
+    except Exception as e:
+        print(f'Error counting rejected transactions by Filiale: {str(e)}')
+        return pd.DataFrame()
+
+def total_transactions_by_filiale():
+    """
+    Calculate the total montant de transactions for each Filiale.
+
+    Returns:
+    pd.DataFrame: DataFrame containing the total montant de transactions for each Filiale.
     """
     try:
         pipeline = [
@@ -246,18 +394,6 @@ def sum_montants_by_filiale():
             {
                 "$project": {
                     "FILIALE": 1,
-                    "Montant de Transactions (Couverture)": {
-                        "$substrCP": [  # Extract numeric part of the montant string
-                            "$Montant de Transactions (Couverture)",
-                            0,
-                            { "$subtract": [ { "$strLenCP": "$Montant de Transactions (Couverture)" }, 3 ] }  # Remove the last three characters (e.g., ".00")
-                        ]
-                    }
-                }
-            },
-            {
-                "$project": {
-                    "FILIALE": 1,
                     "Montant de Transactions (Couverture)": {  # Convert string to float
                         "$toDouble": "$Montant de Transactions (Couverture)"
                     }
@@ -266,26 +402,25 @@ def sum_montants_by_filiale():
             {
                 "$group": {
                     "_id": "$FILIALE",
-                    "total_montant": { "$sum": "$Montant de Transactions (Couverture)" }  # Sum up the montants
+                    "total_transactions": { "$sum": "$Montant de Transactions (Couverture)" }  # Sum up the montants
                 }
             },
             {
-                "$sort": { "total_montant": -1 }  # Sort by total montant in descending order
+                "$sort": { "total_transactions": -1 }  # Sort by total transactions in descending order
             }
         ]
 
         results = collection_recon_results.aggregate(pipeline)
-        df_montants = pd.DataFrame(list(results))
-        df_montants.rename(columns={'_id': 'FILIALE', 'total_montant': 'Montant de Transactions (Couverture)'}, inplace=True)
+        df_transactions = pd.DataFrame(list(results))
+        df_transactions.rename(columns={'_id': 'FILIALE', 'total_transactions': 'Total Transactions'}, inplace=True)
 
-        return df_montants
+        return df_transactions
 
     except Exception as e:
-        print(f'Error calculating sum of Montant Total de Transactions by Filiale: {str(e)}')
+        print(f'Error calculating total transactions by Filiale: {str(e)}')
         return pd.DataFrame()
 
-
-def count_rejected_by_filiale():
+def count_rejects_by_filiale():
     """
     Count the number of rejected transactions grouped by Filiale.
 
@@ -297,22 +432,107 @@ def count_rejected_by_filiale():
             {
                 "$group": {
                     "_id": "$FILIALE",
-                    "Rejected Count": { "$sum": 1 }  # Count the number of rejected transactions
+                    "rejected_count": { "$sum": 1 }  # Count the number of rejected transactions
                 }
             },
             {
-                "$sort": { "Rejected Count": -1 }  # Sort by the number of rejected transactions in descending order
+                "$sort": { "rejected_count": -1 }  # Sort by the number of rejected transactions in descending order
             }
         ]
 
         results = collection_results_rejects.aggregate(pipeline)
         df_rejected_counts = pd.DataFrame(list(results))
-        df_rejected_counts.rename(columns={'_id': 'FILIALE', 'Rejected Count': 'Nombre de Rejets'}, inplace=True)
+        df_rejected_counts.rename(columns={'_id': 'FILIALE', 'rejected_count': 'Rejected Count'}, inplace=True)
 
         return df_rejected_counts
+
     except Exception as e:
         print(f'Error counting rejected transactions by Filiale: {str(e)}')
         return pd.DataFrame()
+
+def total_transactions_by_filiale():
+    """
+    Calculate the total number of transactions for each Filiale.
+
+    Returns:
+    pd.DataFrame: DataFrame containing the total number of transactions for each Filiale.
+    """
+    try:
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$FILIALE",
+                    "total_transactions_count": { "$sum": "$Nbre Total De Transactions" }  # Sum of Nbre Total De Transactions
+                }
+            },
+            {
+                "$sort": { "total_transactions_count": -1 }  # Sort by the total number of transactions in descending order
+            }
+        ]
+
+        results = collection_recon_results.aggregate(pipeline)
+        df_transactions = pd.DataFrame(list(results))
+        df_transactions.rename(columns={'_id': 'FILIALE', 'total_transactions_count': 'Total Transactions Count'}, inplace=True)
+
+        return df_transactions
+
+    except Exception as e:
+        print(f'Error calculating total transactions by Filiale: {str(e)}')
+        return pd.DataFrame()
+
+
+
+def taux_de_rejets_by_filiale():
+    """
+    Calculate the taux de rejets for each Filiale.
+
+    Returns:
+    pd.DataFrame: DataFrame containing the taux de rejets, number of total transactions, and number of rejected transactions for each Filiale.
+    """
+    try:
+        # Get total transactions count and rejected transactions count data
+        df_total_transactions = total_transactions_by_filiale()
+        df_rejected_counts = count_rejects_by_filiale()
+
+        # Ensure columns are correctly named and contain the data we need
+        print("Total Transactions DataFrame:")
+        print(df_total_transactions)
+        print("Rejected Transactions DataFrame:")
+        print(df_rejected_counts)
+
+        # Merge the dataframes on 'FILIALE'
+        df_merged = pd.merge(df_total_transactions, df_rejected_counts, on='FILIALE', how='left')
+
+        # Check if merge was successful
+        print("Merged DataFrame:")
+        print(df_merged)
+
+        # Calculate taux de rejets
+        df_merged['Taux de Rejets (%)'] = (df_merged['Rejected Count'] / df_merged['Total Transactions Count']) * 100
+
+        # Convert 'Nbre de Rejets' to integers
+        df_merged['Rejected Count'] = df_merged['Rejected Count'].fillna(0).astype(int)
+
+        # Format 'Taux de Rejets (%)' as a percentage string
+        df_merged['Taux de Rejets (%)'] = df_merged['Taux de Rejets (%)'].apply(lambda x: f'{x:.2f}%')
+
+        # Rename columns for clarity
+        df_merged.rename(columns={
+            'Total Transactions Count': 'Nbre Total De Transactions',
+            'Rejected Count': 'Nbre de Rejets'
+        }, inplace=True)
+
+        # Print DataFrame for debugging
+        print("DataFrame with Taux de Rejets:")
+        print(df_merged)
+
+        return df_merged[['FILIALE', 'Nbre Total De Transactions', 'Nbre de Rejets', 'Taux de Rejets (%)']]
+
+    except Exception as e:
+        print(f'Error calculating taux de rejets by Filiale: {str(e)}')
+        return pd.DataFrame()
+
+
 
 
 

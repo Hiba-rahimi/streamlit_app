@@ -1,9 +1,9 @@
 import streamlit as st
 import plotly.graph_objects as go
-from MasterCard_UseCase.database_actions import *
+from database_actions import *
 
 def pie_chart_etat_rapprochement():
-    st.header("	:bar_chart:  Repartition de l'état de rapprochement", divider='grey')
+    st.header("	:bar_chart:  Etat de rapprochement", divider='grey')
 
     # Get the counts of each Rapprochement
     df_counts = count_rapprochement()
@@ -51,7 +51,7 @@ def create_bar_chart_by_filiale():
     # Update layout for better visuals
     fig.update_layout(
         barmode='group',
-        title="Repartition de l'état de rapprochement par Filiale",
+        title="Repartition de l'état de rapproch. par filiale",
         xaxis_title="Rapprochement",
         yaxis_title="Count",
         xaxis=dict(
@@ -70,7 +70,7 @@ def create_bar_chart_by_filiale():
     return fig
 
 def display_bar_chart_by_filiale():
-    st.header(":bar_chart: Repartition de l'état de rapprochement par Filiale", divider='grey')
+    st.header(":bar_chart: Etat de rapproch. par filiale", divider='grey')
 
     # Create the bar chart figure
     fig_bar = create_bar_chart_by_filiale()
@@ -79,76 +79,43 @@ def display_bar_chart_by_filiale():
     else:
         st.write("No bar chart available.")
 
-def create_bar_chart_montants_by_filiale():
-    """
-    Create a bar chart that shows the sum of Montant Total de Transactions for each Filiale.
+def display_table_montants_by_filiale():
+    st.header(":bar_chart: Montants par filiale", divider='grey')
 
-    Returns:
-    fig: A Plotly bar chart figure.
-    """
-    df_montants = sum_montants_by_filiale()
-
-    if df_montants.empty:
-        print("No data available for Montant Total de Transactions by Filiale.")
-        return None
-
-    # Initialize the bar chart figure
-    fig = go.Figure()
-
-    # Add bars for each Filiale with different colors
-    for filiale in df_montants['FILIALE'].unique():
-        df_filiale = df_montants[df_montants['FILIALE'] == filiale]
-        fig.add_trace(go.Bar(
-            x=[filiale],  # Single bar for this Filiale
-            y=df_filiale['Montant de Transactions (Couverture)'],
-            text=df_filiale['Montant de Transactions (Couverture)'].apply(lambda x: f'{x:,.2f}'),  # Format numbers with commas
-            textposition='auto',
-            name=filiale,  # Add Filiale name to the legend
-            legendgroup=filiale  # Group traces with the same FILIALE for distinct colors
-        ))
-
-    # Update layout for better visuals
-    fig.update_layout(
-        title="Somme des Montants Totaux de Transactions par Filiale couverts",
-        xaxis_title="FILIALE",
-        yaxis_title="Montant de Transactions (Couverture)",
-        xaxis=dict(
-            title='FILIALE',
-            tickmode='linear',
-            tickangle=-45,  # Rotate x-axis labels for better readability
-            showticklabels=False  # Remove the x-axis labels
-        ),
-        yaxis=dict(
-            title="Montant de Transactions (Couverture)"
-        ),
-        legend_title="FILIALE",
-        showlegend=True,  # Ensure that the legend is shown
-        barmode='group'  # Group bars to show each Filiale together
+    # Add a combobox for filtering options
+    filter_option = st.selectbox(
+        'Sélectionner la période:',
+        ('Total', 'Derniers 30 jours')
     )
 
-    # Debugging: Check the figure content
-    print(fig)
+    # Determine the filter based on the user's selection
+    filter_last_30_days = filter_option == 'Derniers 30 jours'
 
-    return fig
+    # Get the DataFrame
+    df_montants = sum_montants_by_filiale(filter_last_30_days=filter_last_30_days)
 
-def display_bar_chart_montants_by_filiale():
-    st.header(":bar_chart: Montants Totaux de Transactions par Filiale couverts", divider='grey')
-
-    # Create the bar chart figure
-    fig_bar = create_bar_chart_montants_by_filiale()
-    if fig_bar is not None:
-        st.plotly_chart(fig_bar)
+    if df_montants.empty:
+        st.write("No data available for Montant Total de Transactions by Filiale.")
     else:
-        st.write("No bar chart available.")
+        # Format the Montant de Transactions (Couverture) column for better readability
+        df_montants['Montant de Transactions (Couverture)'] = df_montants['Montant de Transactions (Couverture)'].apply(lambda x: f'{x:,.2f}')
 
-def create_bar_chart_rejected_by_filiale():
+        # Display the DataFrame as a table
+        st.table(df_montants)
+
+
+
+def create_bar_chart_rejected_by_filiale(last_30_days=False):
     """
     Create a bar chart that shows the number of rejected transactions for each Filiale.
 
+    Parameters:
+    last_30_days (bool): If True, counts the number of rejected transactions in the last 30 days.
+
     Returns:
     fig: A Plotly bar chart figure.
     """
-    df_rejected_counts = count_rejected_by_filiale()
+    df_rejected_counts = count_rejected_by_filiale(last_30_days)
 
     if df_rejected_counts.empty:
         print("No data available for rejected transactions by Filiale.")
@@ -161,7 +128,7 @@ def create_bar_chart_rejected_by_filiale():
     for filiale in df_rejected_counts['FILIALE'].unique():
         df_filiale = df_rejected_counts[df_rejected_counts['FILIALE'] == filiale]
         fig.add_trace(go.Bar(
-            x=[filiale],  # x-axis represents Filiale
+            x=df_filiale['FILIALE'],  # x-axis represents Filiale
             y=df_filiale['Nombre de Rejets'],  # y-axis represents the count of rejected transactions
             text=df_filiale['Nombre de Rejets'],
             textposition='auto',
@@ -170,14 +137,18 @@ def create_bar_chart_rejected_by_filiale():
         ))
 
     # Update layout for better visuals
+    title = "Nombre de Transactions Rejetées par Filiale"
+    if last_30_days:
+        title += " (Derniers 30 jours)"
+
     fig.update_layout(
-        title="Nombre de Transactions Rejetées par Filiale",
-        xaxis_title="FILIALE",
+        title=title,
+        xaxis_title="Filiale",  # Remove x-axis title
         yaxis_title="Nombre de Rejets",
         xaxis=dict(
-            title='FILIALE',
             tickmode='linear',
-            tickangle=-45
+            tickangle=-45,
+            showticklabels=False  # Hide x-axis labels
         ),
         yaxis=dict(
             title="Nombre de Rejets"
@@ -192,15 +163,61 @@ def create_bar_chart_rejected_by_filiale():
 
     return fig
 
+
+
+
 def display_bar_chart_rejects_by_filiale():
     st.header(":bar_chart: Rejets par filiale", divider='grey')
 
-    # Create the bar chart figure
-    fig_bar = create_bar_chart_rejected_by_filiale()
+    # Add a selectbox to choose the time range
+    time_range = st.selectbox(
+        "Sélectionnez la période:",
+        ["Total", "Derniers 30 jours"]
+    )
+
+    # Determine if the last 30 days option is selected
+    last_30_days = True if time_range == "Derniers 30 jours" else False
+
+    # Create the bar chart figure based on the selection
+    if last_30_days:
+        fig_bar = create_bar_chart_rejected_by_filiale(last_30_days=True)
+    else:
+        fig_bar = create_bar_chart_rejected_by_filiale(last_30_days=False)
+
     if fig_bar is not None:
         st.plotly_chart(fig_bar)
     else:
         st.write("No bar chart available.")
+
+
+def create_table_taux_de_rejets_by_filiale():
+    """
+    Create a DataFrame that shows the taux de rejets for each Filiale.
+
+    Returns:
+    pd.DataFrame: DataFrame containing the taux de rejets for each Filiale.
+    """
+    df_taux_de_rejets = taux_de_rejets_by_filiale()
+
+    if df_taux_de_rejets.empty:
+        print("No data available for Taux de Rejets by Filiale.")
+        return None
+
+    # Return the DataFrame
+    return df_taux_de_rejets
+
+def display_table_taux_de_rejets_by_filiale():
+    st.header(":bar_chart: Taux de Rejets par Filiale", divider='grey')
+
+    # Get the DataFrame
+    df_taux_de_rejets = create_table_taux_de_rejets_by_filiale()
+
+    if df_taux_de_rejets is None or df_taux_de_rejets.empty:
+        st.write("No data available for Taux de Rejets by Filiale.")
+    else:
+        # Display the DataFrame as a table
+        st.table(df_taux_de_rejets)
+
 
 
 
@@ -220,10 +237,9 @@ def main():
         pie_chart_etat_rapprochement()
     with col2:
         display_bar_chart_by_filiale()
-    display_bar_chart_montants_by_filiale()
-    col3, col4 = st.columns(2)
-    with col3:
-        display_bar_chart_rejects_by_filiale()
+    display_table_montants_by_filiale()
+    display_bar_chart_rejects_by_filiale()
+    display_table_taux_de_rejets_by_filiale()
 
 
 
