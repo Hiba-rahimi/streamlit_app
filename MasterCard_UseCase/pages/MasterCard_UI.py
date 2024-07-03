@@ -58,18 +58,7 @@ def filter_sources(df_cybersource, df_sai_manuelle, df_pos  ):
         st.error(f"Erreur lors du filtrage des fichiers source :{e}")
 
 
-def pie_chart():
-    if total_transactions['Cybersource'] > 0 or total_transactions['POS'] > 0 or total_transactions['Saisie Manuelle'] > 0:
-        st.header("	:bar_chart:  Répartition des transactions par source", divider='grey')
 
-        def create_interactive_pie_chart(total_transactions):
-            labels = list(total_transactions.keys())
-            sizes = list(total_transactions.values())
-            fig = go.Figure(data=[go.Pie(labels=labels, values=sizes, hole=.3, textinfo='label+percent+value')])
-            return fig
-
-        fig = create_interactive_pie_chart(total_transactions)
-        st.plotly_chart(fig)
 
 def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df):
     try:
@@ -92,11 +81,12 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
 
             if uploaded_recycled_file:
                 recycled_file_path = save_uploaded_file(uploaded_recycled_file)
-                # df_recyc = pd.read_excel(recycled_file_path)
                 st.write("La date du filtrage : ", filtering_date)
                 df_recycled, merged_df, total_nbre_transactions = merging_with_recycled(
                     recycled_file_path, filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df, filtering_date)
-                st.header("Transactions à recycler")
+                st.write(len(df_recycled))
+                total_transactions['Transactions Recyclées'] = len(df_recycled)
+                st.header("Transactions recyclées")
                 st.dataframe(df_recycled , use_container_width=True)
                 st.write("### Nombre de transactions des sources avec rej. recyc.", total_nbre_transactions)
 
@@ -170,7 +160,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                               key= "email_button2",type="primary" , use_container_width=True )
                 st.divider()
 
-                st.header('Transactions Rejetées')
+                st.header('Transactions Rejetées ,à recycler')
                 st.dataframe(st.session_state.df_rejections , use_container_width=True)
                 col10 ,col11 , col12 = st.columns(3)
                 with col10:
@@ -187,6 +177,18 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
     except Exception as e:
         st.error(f"Erreur lors du traitement du fichier Mastercard ")
         st.write(e)
+def pie_chart():
+    if total_transactions['Cybersource'] > 0 or total_transactions['POS'] > 0 or total_transactions['Saisie Manuelle'] > 0:
+        st.header("	:bar_chart:  Répartition des transactions par source", divider='grey')
+
+        def create_interactive_pie_chart(total_transactions):
+            labels = list(total_transactions.keys())
+            sizes = list(total_transactions.values())
+            fig = go.Figure(data=[go.Pie(labels=labels, values=sizes, hole=.3, textinfo='label+percent+value')])
+            return fig
+
+        fig = create_interactive_pie_chart(total_transactions)
+        st.plotly_chart(fig)
 def main():
     global uploaded_mastercard_file, uploaded_cybersource_file, uploaded_pos_file, uploaded_sai_manuelle_file, filtering_date, uploaded_recycled_file
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
@@ -194,7 +196,7 @@ def main():
     st.sidebar.page_link("app.py", label="**Accueil**", icon="🏠")
     st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
     st.sidebar.page_link("pages/Dashboard.py", label="  **📊 Tableau de bord**" )
-    st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 MasterCard Network Reconciliaiton Option**")
+    st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 Réconciliation MasterCard**")
     st.sidebar.page_link("pages/calendar_view.py", label="**📆 Vue Agenda**")
     st.header(":credit_card: :violet[Réconciliation MasterCard ]", divider='blue')
     uploaded_mastercard_file = st.file_uploader(":arrow_down: **Chargez le fichier Mastercard**", type=["001"])
@@ -215,15 +217,13 @@ def main():
     default_columns_pos = ['FILIALE', 'RESEAU', 'TYPE_TRANSACTION', 'DATE_TRAI', 'CUR', 'NBRE_TRANSACTION', 'MONTANT_TOTAL']
 
     if uploaded_mastercard_file :
-
-        total_transactions = {'Cybersource': 0, 'POS': 0, 'Saisie Manuelle': 0}
+        total_transactions = {'Cybersource': 0, 'POS': 0, 'Saisie Manuelle': 0 , 'Transactions Recyclées': 0 }
 
         try:
             run_date , day_after, df_cybersource, df_sai_manuelle, df_pos = upload_all_sources()
         except Exception as e:
             st.error(f"Erreur lors du chargement des sources")
             st.write(e)
-
 
         try:
             filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df = filter_sources(df_cybersource, df_sai_manuelle, df_pos)

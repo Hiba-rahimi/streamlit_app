@@ -1,6 +1,6 @@
 import streamlit as st
 import plotly.graph_objects as go
-from database_actions import *
+from MasterCard_UseCase.database_actions import *
 
 def pie_chart_etat_rapprochement():
     st.header("	:bar_chart:  Etat de rapprochement", divider='grey')
@@ -65,7 +65,7 @@ def create_bar_chart_by_filiale():
     )
 
     # Debugging: Check the figure content
-    print(fig)
+    #print(fig)
 
     return fig
 
@@ -118,7 +118,7 @@ def create_bar_chart_rejected_by_filiale(last_30_days=False):
     df_rejected_counts = count_rejected_by_filiale(last_30_days)
 
     if df_rejected_counts.empty:
-        print("No data available for rejected transactions by Filiale.")
+        #print("No data available for rejected transactions by Filiale.")
         return None
 
     # Initialize the bar chart figure
@@ -159,11 +159,9 @@ def create_bar_chart_rejected_by_filiale(last_30_days=False):
     )
 
     # Debugging: Check the figure content
-    print(fig)
+    #print(fig)
 
     return fig
-
-
 
 
 def display_bar_chart_rejects_by_filiale():
@@ -200,7 +198,7 @@ def create_table_taux_de_rejets_by_filiale():
     df_taux_de_rejets = taux_de_rejets_by_filiale()
 
     if df_taux_de_rejets.empty:
-        print("No data available for Taux de Rejets by Filiale.")
+        #print("No data available for Taux de Rejets by Filiale.")
         return None
 
     # Return the DataFrame
@@ -219,7 +217,30 @@ def display_table_taux_de_rejets_by_filiale():
         st.table(df_taux_de_rejets)
 
 
+def display_table_rejected_montants_by_filiale():
+    st.header(":bar_chart: Montants rejetés par filiale", divider='grey')
 
+    # Add a combobox for filtering options with a unique key
+    filter_option = st.selectbox(
+        'Sélectionner la période:',
+        ('Total', 'Derniers 30 jours'),
+        key='rejected_montants_by_filiale_filter'  # Unique key
+    )
+
+    # Determine the filter based on the user's selection
+    filter_last_30_days = filter_option == 'Derniers 30 jours'
+
+    # Get the DataFrame
+    df_montants_rejetes = montants_rejetes_par_filiale(filter_last_30_days=filter_last_30_days)
+
+    if df_montants_rejetes.empty:
+        st.write("No data available for Montant Total de Transactions by Filiale.")
+    else:
+        # Format the Montant de Transactions (Couverture) column for better readability
+        df_montants_rejetes['Montant'] = df_montants_rejetes['Montant'].apply(lambda x: f'{x:,.2f}')
+
+        # Display the DataFrame as a table
+        st.table(df_montants_rejetes)
 
 
 def main():
@@ -228,7 +249,7 @@ def main():
     st.sidebar.page_link("app.py", label="**Accueil**", icon="🏠")
     st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
     st.sidebar.page_link("pages/Dashboard.py", label="  **📊 Tableau de bord**" )
-    st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 MasterCard Network Reconciliaiton Option**")
+    st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 Réconciliation MasterCard**")
     st.sidebar.page_link("pages/calendar_view.py", label="**📆 Vue Agenda**")
     st.header("Tableau de bord", divider='rainbow')
     st.write("  ")
@@ -240,7 +261,7 @@ def main():
     display_table_montants_by_filiale()
     display_bar_chart_rejects_by_filiale()
     display_table_taux_de_rejets_by_filiale()
-
+    display_table_rejected_montants_by_filiale()
 
 
 if __name__ == "__main__":

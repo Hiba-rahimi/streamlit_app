@@ -6,7 +6,7 @@ st.sidebar.divider()
 st.sidebar.page_link("app.py", label="**Accueil**", icon="🏠")
 st.sidebar.page_link("pages/results_recon.py", label="**:alarm_clock: Historique**")
 st.sidebar.page_link("pages/Dashboard.py", label="  **📊 Tableau de bord**" )
-st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 MasterCard Network Reconciliaiton Option**")
+st.sidebar.page_link("pages/MasterCard_UI.py", label="**🔀 Réconciliation MasterCard**")
 st.sidebar.page_link("pages/calendar_view.py", label="**📆 Vue Agenda**")
 calendar_options = {
     "editable": "true",

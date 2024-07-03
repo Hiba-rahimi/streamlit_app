@@ -88,7 +88,7 @@ def search_results_by_transaction_date(run_date):
         return df_results_recon
     except Exception as e:
         # Return an empty DataFrame if the search fails
-        print(f'Error searching for records by Transaction_Date: {str(e)}')
+        st.write(f'Error searching for records by Transaction_Date: {str(e)}')
 
 
 def search_rejects_by_transaction_date(run_date):
@@ -111,7 +111,7 @@ def search_rejects_by_transaction_date(run_date):
         return df_rejects_recon
     except Exception as e:
         # Return an empty DataFrame if the search fails
-        print(f'Error searching for records by Transaction_Date: {str(e)}')
+        st.write(f'Error searching for records by Transaction_Date: {str(e)}')
 
 def search_by_rapprochement(rapprochment):
     """
@@ -133,7 +133,7 @@ def search_by_rapprochement(rapprochment):
         return df_results
     except Exception as e:
         # Return an empty DataFrame if the search fails
-        print(f'Error searching for records by Etat de rapprochement: {str(e)}')
+        st.write(f'Error searching for records by Etat de rapprochement: {str(e)}')
 
 def count_rapprochement():
     """
@@ -168,7 +168,7 @@ def count_rapprochement():
         return df_counts
     except Exception as e:
         # Print error message if the count fails
-        print(f'Error counting records by Etat de rapprochement: {str(e)}')
+        st.write(f'Error counting records by Etat de rapprochement: {str(e)}')
         return pd.DataFrame()
 
 def count_rapprochement_by_filiale():
@@ -209,7 +209,7 @@ def count_rapprochement_by_filiale():
 
         return df_counts
     except Exception as e:
-        print(f'Error counting records by Rapprochement and Filiale: {str(e)}')
+        st.write(f'Error counting records by Rapprochement and Filiale: {str(e)}')
         return pd.DataFrame()
 
 def sum_montants_by_filiale(filter_last_30_days=False):
@@ -309,7 +309,7 @@ def sum_montants_by_filiale(filter_last_30_days=False):
         return df_montants
 
     except Exception as e:
-        print(f'Error calculating sum of Montant Total de Transactions by Filiale: {str(e)}')
+        st.write(f'Error calculating sum of Montant Total de Transactions by Filiale: {str(e)}')
         return pd.DataFrame()
 
 
@@ -331,8 +331,8 @@ def count_rejected_by_filiale(last_30_days=False):
             # Calculate the date 30 days ago from today
             thirty_days_ago = datetime.now() - timedelta(days=30)
             thirty_days_ago_str = thirty_days_ago.strftime('%y-%m-%d')
-            print("30 jours")
-            print(thirty_days_ago_str)
+            #print("30 jours")
+            #print(thirty_days_ago_str)
             pipeline.append({
                 "$match": {
                     "rejected_date": {"$gte": thirty_days_ago_str}
@@ -357,7 +357,7 @@ def count_rejected_by_filiale(last_30_days=False):
 
         return df_rejected_counts
     except Exception as e:
-        print(f'Error counting rejected transactions by Filiale: {str(e)}')
+        st.write(f'Error counting rejected transactions by Filiale: {str(e)}')
         return pd.DataFrame()
 
 def total_transactions_by_filiale():
@@ -417,7 +417,7 @@ def total_transactions_by_filiale():
         return df_transactions
 
     except Exception as e:
-        print(f'Error calculating total transactions by Filiale: {str(e)}')
+        st.write(f'Error calculating total transactions by Filiale: {str(e)}')
         return pd.DataFrame()
 
 def count_rejects_by_filiale():
@@ -447,7 +447,7 @@ def count_rejects_by_filiale():
         return df_rejected_counts
 
     except Exception as e:
-        print(f'Error counting rejected transactions by Filiale: {str(e)}')
+        st.write(f'Error counting rejected transactions by Filiale: {str(e)}')
         return pd.DataFrame()
 
 def total_transactions_by_filiale():
@@ -477,7 +477,7 @@ def total_transactions_by_filiale():
         return df_transactions
 
     except Exception as e:
-        print(f'Error calculating total transactions by Filiale: {str(e)}')
+        st.write(f'Error calculating total transactions by Filiale: {str(e)}')
         return pd.DataFrame()
 
 
@@ -495,17 +495,17 @@ def taux_de_rejets_by_filiale():
         df_rejected_counts = count_rejects_by_filiale()
 
         # Ensure columns are correctly named and contain the data we need
-        print("Total Transactions DataFrame:")
-        print(df_total_transactions)
-        print("Rejected Transactions DataFrame:")
-        print(df_rejected_counts)
+        #print("Total Transactions DataFrame:")
+        #print(df_total_transactions)
+        #print("Rejected Transactions DataFrame:")
+        #print(df_rejected_counts)
 
         # Merge the dataframes on 'FILIALE'
         df_merged = pd.merge(df_total_transactions, df_rejected_counts, on='FILIALE', how='left')
 
         # Check if merge was successful
-        print("Merged DataFrame:")
-        print(df_merged)
+        #print("Merged DataFrame:")
+        #print(df_merged)
 
         # Calculate taux de rejets
         df_merged['Taux de Rejets (%)'] = (df_merged['Rejected Count'] / df_merged['Total Transactions Count']) * 100
@@ -523,13 +523,67 @@ def taux_de_rejets_by_filiale():
         }, inplace=True)
 
         # Print DataFrame for debugging
-        print("DataFrame with Taux de Rejets:")
-        print(df_merged)
+        #print("DataFrame with Taux de Rejets:")
+        #print(df_merged)
 
         return df_merged[['FILIALE', 'Nbre Total De Transactions', 'Nbre de Rejets', 'Taux de Rejets (%)']]
 
     except Exception as e:
-        print(f'Error calculating taux de rejets by Filiale: {str(e)}')
+        st.write(f'Error calculating taux de rejets by Filiale: {str(e)}')
+        return pd.DataFrame()
+
+def montants_rejetes_par_filiale(filter_last_30_days=False):
+    """
+    Calculate the sum of Montant Total de Transactions for each Filiale and concatenate it with Devise.
+    Optionally filter transactions to include only those from the last 30 days.
+
+    Args:
+    filter_last_30_days (bool): If True, filter transactions to include only those from the last 30 days.
+
+    Returns:
+    pd.DataFrame: DataFrame containing the sum of Montant Total de Transactions for each Filiale, concatenated with Devise.
+    """
+    try:
+        pipeline = []
+
+        if filter_last_30_days:
+            # Calculate the date 30 days ago from today
+            thirty_days_ago = datetime.now() - timedelta(days=30)
+            thirty_days_ago_str = thirty_days_ago.strftime('%y-%m-%d')
+            pipeline.append({
+                "$match": {
+                    "rejected_date": { "$gte": thirty_days_ago_str }
+                }
+            })
+
+        pipeline.extend([
+            {
+                "$group": {
+                    "_id": "$FILIALE",
+                    "Montant": { "$sum": "$Montant" },  # Sum up the montants
+                    "Devise": { "$first": "$Devise" }  # Get the Devise for each Filiale
+                }
+            },
+            {
+                "$project": {
+                    "_id": 0,
+                    "FILIALE": "$_id",
+                    "Montant": "$Montant",
+                    "Devise": "$Devise"
+                }
+            },
+            {
+                "$sort": { "Montant": -1 }  # Sort by total montant in descending order
+            }
+        ])
+
+        results = collection_results_rejects.aggregate(pipeline)
+        df_montants = pd.DataFrame(list(results))
+
+        return df_montants
+
+    except Exception as e:
+        st.write(f'Error calculating sum of rejected Montant Total de Transactions by Filiale: {str(e)}')
         return pd.DataFrame()
 
 
