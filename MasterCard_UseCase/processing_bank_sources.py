@@ -118,7 +118,6 @@ def filtering_sources(df_cybersource, df_sai_manuelle, df_pos, RESEAU):
     return filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df
 
 
-
 def validate_file_name_and_date(file_name, source, date_to_validate=None):
     """
     Validate the file name based on the source, the required pattern, 
@@ -165,8 +164,8 @@ def excel_to_csv_to_df(excel_file_path, sheet_name=0):
     """
     try:
         # Read the Excel file
-        df = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=0)
-        
+        df = pd.read_excel(excel_file_path, sheet_name=sheet_name, header=0  , engine='openpyxl')
+
         # Define the CSV file path
         csv_file_path = excel_file_path.replace('.xlsx', '.csv')
         
@@ -408,26 +407,17 @@ def handle_non_match_reconciliation(file_path,merged_df , run_date):
     #df_reconciliated.to_csv('reconciliated.csv', index=False)
     return df_reconciliated
 def handling_recycled(recycled_path, filtering_date):
-    # Processing the recycled data
-    df_recycled = excel_to_csv_to_df(recycled_path)
 
-    df_recycled.columns = df_recycled.columns.str.strip()
-    df_recycled = df_recycled.apply(lambda x: x.str.strip() if x.dtype == "object" else x)
-    df_recycled.rename(columns={'BANQUE': 'FILIALE'}, inplace=True)
-    df_recycled['Date Retraitement'] = standardize_date_format(df_recycled['Date Retraitement'])
-
+    df_recyc = excel_to_csv_to_df(recycled_path)
+    df_recyc['Date Retraitement'] = standardize_date_format(df_recycled['Date Retraitement'])
     # Filtering recycled data based on the date
-    df_recycled = df_recycled[df_recycled['Date Retraitement'] == filtering_date.strftime('%Y-%m-%d')]
-    df_recycled.drop_duplicates(subset=['FILIALE', 'RESEAU', 'ARN', 'Autorisation', 'Date Transaction', 'Montant', 'Devise'], inplace=True)
-
-    # Normalizing 'FILIALE' values
-    df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace("COTE D'IVOIRE", "COTE D IVOIRE")
-    df_recycled['FILIALE'] = df_recycled['FILIALE'].str.replace('SG-', 'SG - ')
-    total_transactions_recycled = len(df_recycled)
+    df_recyc = df_recyc[df_recyc['Date Retraitement'] == filtering_date.strftime('%Y-%m-%d')]
+    df_recyc.rename(columns={'BANQUE': 'FILIALE'}, inplace=True)
+    df_recyc.drop_duplicates(subset=['FILIALE', 'RESEAU', 'ARN', 'Autorisation', 'Date Transaction', 'Montant', 'Devise'], inplace=True)
+    total_transactions_recycled = len(df_recyc)
     st.write("debugging vvv")
-    st.dataframe(df_recycled)
-    return df_recycled , total_transactions_recycled
-
+    st.dataframe(df_recyc)
+    return total_transactions_recycled
 def blue_style_and_save_to_excel(df):
     """
     Styles a DataFrame and saves it to an Excel file with a predefined style.

@@ -84,17 +84,17 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
             mastercard_file_path = save_uploaded_file(uploaded_mastercard_file)
             nbr_total_MC, rejected_summary, rejected_df = parse_t140_MC(mastercard_file_path)
             col1, col2, col3 = st.columns(3)
-            col1.metric("**Nombre total de transactions dans le fichier Mastercard :**", value=nbr_total_MC)
+            col1.metric("**:orange-background[Nombre total de transactions dans le fichier Mastercard] :**", value=nbr_total_MC)
 
             if uploaded_recycled_file:
                 recycled_file_path = save_uploaded_file(uploaded_recycled_file)
-                st.write("La date du filtrage : ", filtering_date)
+                # st.write("La date du filtrage : ", filtering_date)
                 df_recycled, merged_df, total_nbre_transactions = merging_with_recycled(
                     recycled_file_path, filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df, filtering_date)
-                st.write(len(df_recycled))
                 total_transactions['Transactions Recyclées'] = len(df_recycled)
-                st.header("Transactions recyclées")
-                st.dataframe(df_recycled , use_container_width=True)
+                bar_chart()
+                st.header(":small_blue_diamond: :blue-background[Transactions recyclées]")
+                st.dataframe(df_recycled, use_container_width=True)
                 st.write("### Nombre de transactions des sources avec rej. recyc.", total_nbre_transactions)
 
             else:
@@ -103,13 +103,13 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                 st.write("### Nombre de transactions des sources sans rej. recyc.", total_nbre_transactions)
                 st.warning("Le fichier de transactions à recycler n'a pas été chargé."
                            " La réconciliation sera effectuée sans les transactions recyclées.")
-            col2.metric("**Nombre total de transactions dans les fichiers :**", value=total_nbre_transactions)
-            col3.metric("___Difference___", value=abs(nbr_total_MC - total_nbre_transactions),
+            col2.metric("**:blue-background[Nombre total de transactions dans les autres sources] :**", value=total_nbre_transactions)
+            col3.metric(":red-background[___Difference___]", value=abs(nbr_total_MC - total_nbre_transactions),
                         help="La différence nette des transactions entre les deux côtés est")
 
             if st.button('Réconcilier', type="primary", use_container_width=True):
                 if nbr_total_MC == total_nbre_transactions:
-                    st.header('Résulat de la réconciliation')
+                    st.header(':small_blue_diamond: :blue-background[Résulat de la réconciliation]')
                     st.session_state.df_reconciliated = handle_exact_match_csv(merged_df , run_date=run_date)
                     st.success("Réconciliation faite sans écart")
                     st.divider()
@@ -123,7 +123,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
 
             # Always display the dataframes stored in session state
             if st.session_state.df_reconciliated is not None:
-                st.header('Résulat de la réconciliation')
+                st.header(':small_blue_diamond: :blue-background[Résulat de la réconciliation]')
                 st.dataframe(st.session_state.df_reconciliated)
                 col4, col5, col6 = st.columns(3)
                 with col4:
@@ -137,7 +137,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                 st.divider()
 
             if st.session_state.df_non_reconciliated is not None:
-                st.header('Résultat de la Réconciliation')
+                st.header(':small_blue_diamond: :blue-background[Résultat de la Réconciliation]')
                 st.dataframe(st.session_state.df_non_reconciliated.style.apply(highlight_non_reconciliated_row, axis=1))
                 col4, col5, col6 = st.columns(3)
                 with col4:
@@ -152,7 +152,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                               key="email_button1",type="primary" , use_container_width=True )
                 st.divider()
 
-                st.header('Résumé des rejets')
+                st.header(':small_blue_diamond: :blue-background[Résumé des rejets]')
                 st.dataframe(st.session_state.df_summary , use_container_width=True)
                 col7 ,col8, col9 = st.columns(3)
                 with col7 :
@@ -167,7 +167,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                               key= "email_button2",type="primary" , use_container_width=True )
                 st.divider()
 
-                st.header('Transactions Rejetées ,à recycler')
+                st.header(':small_blue_diamond: :blue-background[Transactions Rejetées, à recycler ] :recycle: ')
                 st.dataframe(st.session_state.df_rejections , use_container_width=True)
                 col10 ,col11 , col12 = st.columns(3)
                 with col10:
@@ -184,18 +184,31 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
     except Exception as e:
         st.error(f"Erreur lors du traitement du fichier Mastercard ")
         st.write(e)
-def pie_chart():
+def bar_chart():
     if total_transactions['Cybersource'] > 0 or total_transactions['POS'] > 0 or total_transactions['Saisie Manuelle'] > 0:
-        st.header("	:bar_chart:  Répartition des transactions par source", divider='grey')
+        st.header(":bar_chart: :blue-background[Répartition des transactions par source]", divider='grey')
 
-        def create_interactive_pie_chart(total_transactions):
+        def create_interactive_bar_chart(total_transactions):
             labels = list(total_transactions.keys())
             sizes = list(total_transactions.values())
-            fig = go.Figure(data=[go.Pie(labels=labels, values=sizes, hole=.3, textinfo='label+percent+value')])
+            total = sum(sizes)
+            percentages = [f'{(size/total)*100:.2f}%' for size in sizes]
+
+            # Define different colors for each bar
+            colors = ['#EF553B', '#F6F193', '#00CC96', '#B1AFFF']
+
+            fig = go.Figure(data=[go.Bar(
+                x=labels,
+                y=sizes,
+                text=[f'{size} ({percent})' for size, percent in zip(sizes, percentages)],
+                textposition='auto',
+                marker=dict(color=colors)
+            )])
             return fig
 
-        fig = create_interactive_pie_chart(total_transactions)
+        fig = create_interactive_bar_chart(total_transactions)
         st.plotly_chart(fig)
+
 def main():
     global uploaded_mastercard_file, uploaded_cybersource_file, uploaded_pos_file, uploaded_sai_manuelle_file, filtering_date, uploaded_recycled_file
     st.sidebar.image("assets/Logo_hps_0.png", use_column_width=True)
@@ -211,9 +224,22 @@ def main():
     uploaded_pos_file = st.file_uploader(":arrow_down: **Chargez le fichier POS**", type=["csv"])
     uploaded_sai_manuelle_file = st.file_uploader(":arrow_down: **Chargez le fichier du saisie manuelle**", type=["csv"])
     st.divider()
-    filtering_date = st.date_input("**Veuillez entrer la date du filtrage pour les transactions rejetées**")
+    filtering_date = st.date_input("**Veuillez entrer la date du filtrage souhaitée pour les transactions rejetées**")
     st.divider()
     uploaded_recycled_file = st.file_uploader(":arrow_down: **Chargez le fichier des transactions recyclées**", type=["xlsx"])
+    with st.expander(" **Cliquez ici pour télécharger un modèle du fichier des transactions recyclées**" , icon="ℹ️"):
+        st.write("**afin de s'assurer que le fichier sera bien traité** ")
+        file_path = "assets/template_rejets_recyclées.xlsx"  # Update this with your actual file path
+        # Read the file content
+        with open(file_path, 'rb') as file:
+            file_content = file.read()
+        st.download_button(
+            label="Télécharger le Modèle ",
+            data=file_content,
+            file_name=os.path.basename(file_path),
+            mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            type="primary"
+        )
 
     global run_date , day_after
     st.divider()
@@ -237,8 +263,6 @@ def main():
         except Exception as e:
             st.error(f"Impossible de traiter les fichiers")
             st.write(e)
-
-        pie_chart()
         try:
             handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df)
         except Exception as e:

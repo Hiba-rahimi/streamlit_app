@@ -27,7 +27,7 @@ def main():
 
         # Display reconciliation results
         if not df_search_recon_results.empty:
-            st.write("Résultats de Réconciliation")
+            st.header(":small_blue_diamond: :blue-background[Résultats de Réconciliation]")
             df_search_recon_results.drop(columns=['_id'], inplace=True)
             st.dataframe(df_search_recon_results.style.apply(highlight_non_reconciliated_row, axis=1))
             excel_path_recon, file_name_recon = download_file(
@@ -43,7 +43,7 @@ def main():
 
         # Display rejected transactions results
         if not df_search_rejects_results.empty:
-            st.write("Transactions Rejetées")
+            st.header(":small_blue_diamond: :blue-background[Transactions Rejetées]")
 
             df_search_rejects_results.drop(columns=['_id'], inplace=True)
             df_search_rejects_results.drop(columns=['rejected_date'], inplace=True)
@@ -55,8 +55,8 @@ def main():
                 button_label=":arrow_down: Téléchargez les transactions rejetées",
                 run_date=formatted_date_rejects
             )
-        else:
-            st.warning("Aucun enregistrement trouvé pour les transactions rejetées à la date sélectionnée.")
+        # else:
+        #     st.warning("Aucun enregistrement trouvé pour les transactions rejetées pour la date sélectionnée.")
 
 if __name__ == "__main__":
     main()
