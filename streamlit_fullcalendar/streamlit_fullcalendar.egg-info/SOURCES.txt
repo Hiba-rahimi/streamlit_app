@@ -1,6 +1,0 @@
-setup.py
-streamlit_fullcalendar.egg-info/PKG-INFO
-streamlit_fullcalendar.egg-info/SOURCES.txt
-streamlit_fullcalendar.egg-info/dependency_links.txt
-streamlit_fullcalendar.egg-info/requires.txt
-streamlit_fullcalendar.egg-info/top_level.txt
