@@ -65,8 +65,6 @@ def filter_sources(df_cybersource, df_sai_manuelle, df_pos  ):
         st.error(f"Erreur lors du filtrage des fichiers source :{e}")
 
 
-
-
 def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_pos_df):
     try:
         # Initialize session state variables
@@ -125,7 +123,7 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
             if st.session_state.df_reconciliated is not None:
                 st.header(':small_blue_diamond: :blue-background[Résulat de la réconciliation]')
                 st.dataframe(st.session_state.df_reconciliated)
-                col4, col5, col6 = st.columns(3)
+                col4, col5, col6, col7= st.columns(4)
                 with col4:
                     excel_path_email_1 , file_name_1= download_file(recon=True, df=st.session_state.df_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
                 with col5:
@@ -133,15 +131,18 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                 with col6:
                     st.button(":email: Insérer le tableau dans un E-mail" ,
                               # on_click= lambda : send_excel_contents_to_outlook(excel_path_email_1, file_name_1) ,
-                              key= 10,type="primary" , use_container_width=True )
+                              key= 10,type="primary" , use_container_width=True)
+                with col7:
+                    st.button('🔖 Créer un ticket Jira' , on_click= lambda: create_jira_ticket(), key="jira_ticket_1", type="primary", use_container_width=True)
+                    # new_issue = create_jira_ticket()
                 st.divider()
 
             if st.session_state.df_non_reconciliated is not None:
                 st.header(':small_blue_diamond: :blue-background[Résultat de la Réconciliation]')
                 st.dataframe(st.session_state.df_non_reconciliated.style.apply(highlight_non_reconciliated_row, axis=1))
-                col4, col5, col6 = st.columns(3)
+                col4, col5, col6, col7 = st.columns(4)
                 with col4:
-                    excel_path_email_1 , file_name_1= download_file(recon=True, df=st.session_state.df_non_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
+                    excel_path_email_1, file_name_1= download_file(recon=True, df=st.session_state.df_non_reconciliated, file_partial_name='results_recon_MC', button_label=":arrow_down: Téléchargez les résultats de réconciliation", run_date=run_date)
                 with col5:
                     st.button(":floppy_disk: Stocker le résultat de réconciliation " ,
                               #on_click= lambda: insert_reconciliated_data(st.session_state.df_non_reconciliated) ,
@@ -150,34 +151,41 @@ def handle_recon(filtered_cybersource_df, filtered_saisie_manuelle_df, filtered_
                     st.button(":email: Insérer le tableau dans un E-mail" ,
                               #on_click= lambda : send_excel_contents_to_outlook(excel_path_email_1, file_name_1) ,
                               key="email_button1",type="primary" , use_container_width=True )
+                with col7:
+                    st.button('🔖 Créer un ticket Jira' , on_click= lambda: create_jira_ticket(), type="primary", key="jira_ticket_2", use_container_width=True)
+
                 st.divider()
 
                 st.header(':small_blue_diamond: :blue-background[Résumé des rejets]')
                 st.dataframe(st.session_state.df_summary , use_container_width=True)
-                col7 ,col8, col9 = st.columns(3)
+                col7 ,col8, col9, col13 = st.columns(4)
                 with col7 :
                     excel_path_email_2 , file_name_2 = download_file(recon=False, df=st.session_state.df_summary, file_partial_name='rejected_summary_MC', button_label=":arrow_down: Téléchargez le résumé des rejets", run_date=run_date)
                 with col8:
-                    st.button(":floppy_disk: Stocker le résumé des rejets " ,
+                    st.button(":floppy_disk: Stocker le résumé des rejets ",
                               #on_click= lambda: insert_rejection_summary(st.session_state.df_summary) ,
                                 key= "stocker_button3",type="primary" , use_container_width=True)
                 with col9:
                     st.button(":email: Insérer le tableau dans un E-mail",
                               #on_click= lambda : send_excel_contents_to_outlook(excel_path_email_2, file_name_2) ,
                               key= "email_button2",type="primary" , use_container_width=True )
-                st.divider()
+                with col13:
+                    st.button('🔖 Créer un ticket Jira' , on_click= lambda: create_jira_ticket(), type="primary" , key="jira_ticket_3", use_container_width=True)
 
+                st.divider()
                 st.header(':small_blue_diamond: :blue-background[Transactions Rejetées, à recycler ] :recycle: ')
                 st.dataframe(st.session_state.df_rejections , use_container_width=True)
-                col10 ,col11 , col12 = st.columns(3)
+                col10 ,col11 , col12, col14 = st.columns(4)
                 with col10:
                     excel_path_email_3 , file_name_3= download_file(recon=False, df=st.session_state.df_rejections, file_partial_name='rejected_transactions_MC', button_label=":arrow_down: Téléchargez les rejets", run_date=run_date)
                 with col11:
                     st.button(":floppy_disk: Stocker les rejets " , on_click= lambda: insert_rejected_transactions(st.session_state.df_rejections) , key= "stocker_button4",type="primary" , use_container_width=True)
                 with col12:
-                    st.button(":email: Insérer le tableau dans un E-mail" ,
+                    st.button(":email: Insérer le tableau dans un E-mail",
                               #on_click= lambda : send_excel_contents_to_outlook(excel_path_email_3, file_name_3) ,
                                 key= "email_button3",type="primary" , use_container_width=True )
+                with col14:
+                    st.button('🔖 Créer un ticket Jira' , on_click= lambda: create_jira_ticket(), key="jira_ticket_4", type="primary", use_container_width=True)
 
         else:
             st.warning("Veuillez charger tous les fichiers nécessaires pour procéder.")

@@ -607,3 +607,27 @@ def save_excel_locally(excel_path , file_name):
     #                 modal.close()
     #
     # return modal
+# TESTING
+# Jira configuration
+JIRA_SERVER = 'https://your-jira-instance.atlassian.net'
+JIRA_USERNAME = 'your-email@example.com'
+JIRA_API_TOKEN = 'your-api-token'
+JIRA_PROJECT_KEY = 'YOUR_PROJECT_KEY'
+JIRA_ISSUE_TYPE = 'Task'
+
+# Function to create a Jira ticket
+def create_jira_ticket():
+    # def create_jira_ticket(summary, description):
+
+    jira = JIRA(server=JIRA_SERVER, basic_auth=(JIRA_USERNAME, JIRA_API_TOKEN))
+
+    issue_dict = {
+        'project': {'key': JIRA_PROJECT_KEY},
+        # 'summary': summary,
+        # 'description': description,
+        'issuetype': {'name': JIRA_ISSUE_TYPE},
+    }
+
+    new_issue = jira.create_issue(fields=issue_dict)
+    return new_issue
+
